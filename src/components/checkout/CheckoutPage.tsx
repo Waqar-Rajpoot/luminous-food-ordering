@@ -515,10 +515,11 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
       const data = await response.json();
 
-      if (response.ok && data.sessionId) {
+      if (response.ok && data.url) {
         dispatch({ type: 'CLEAR_CART' });
-        const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
-        if (error) throw new Error(error.message);
+        // const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+        // if (error) throw new Error(error.message);
+        window.location.assign(data.url);
         return "Redirecting to payment...";
       } else {
         throw new Error(data.message || "Failed to initiate checkout.");

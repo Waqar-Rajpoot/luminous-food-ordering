@@ -10,7 +10,7 @@ import { checkoutDataSchema } from "@/schemas/checkoutDataSchema";
 
 const key = process.env.STRIPE_SECRET_KEY || "";
 const stripe = new Stripe(key, {
-  apiVersion: "2025-08-27.basil",
+  apiVersion: "2025-12-15.clover",
 });
 
 export async function POST(request: NextRequest) {

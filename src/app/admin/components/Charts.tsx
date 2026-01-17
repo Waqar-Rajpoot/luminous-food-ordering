@@ -172,7 +172,7 @@ const Chart = () => {
                   dataKey="value"
                   nameKey="name"
                   label={({ name, percent }) =>
-                    `${name} (${(percent * 100).toFixed(0)}%)`
+                    `${name} (${((percent ?? 0 )* 100).toFixed(0)}%)`
                   }
                 >
                   {orderStatusData.map((entry, index) => (
@@ -317,7 +317,7 @@ const Chart = () => {
                   dataKey="value"
                   nameKey="name"
                   label={({ name, percent }) =>
-                    `${name} (${(percent * 100).toFixed(0)}%)`
+                    `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
                   }
                 >
                   <Label
@@ -475,7 +475,7 @@ const Chart = () => {
                   dataKey="value"
                   nameKey="name"
                   label={({ name, percent }) =>
-                    `${name} (${(percent * 100).toFixed(0)}%)`
+                    `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
                   }
                 >
                   {bookingStatusData.map((entry, index) => (
