@@ -52,7 +52,7 @@ export default function AdminDashboard() {
         
         {/* Top Branding & Profile - Responsive flex and text sizes */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 border-b border-white/10 pb-6 md:pb-8 gap-6">
-          <div className="w-full md:w-auto">
+          <div className="w-full md:w-auto flex flex-col justify-center md:justify-center">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold yeseva-one tracking-tight">
               Admin <span className="text-[#efa765]">Summary</span>
             </h1>
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
               Store performance insights and management.
             </p>
           </div>
-          <div className="w-full md:w-auto flex justify-start md:justify-end">
+          <div className="w-full md:w-auto flex justify-center md:justify-center">
              <UserProfile user={session?.user as any} />
           </div>
         </header>

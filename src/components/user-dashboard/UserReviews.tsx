@@ -6,9 +6,9 @@ export const UserReviews = ({ reviews }: any) => {
     <div className="bg-[#1E293B]/40 backdrop-blur-md rounded-[2.5rem] border border-white/5 p-8 h-full shadow-xl">
       <div className="flex items-center gap-2 mb-6">
         <Star className="text-[#EFA765]" size={20} fill="#EFA765" />
-        <h3 className="text-xl font-black font-[var(--font-yeseva-one)] text-white">My Reviews</h3>
+        <h3 className="text-xl font-black text-white">My Reviews</h3>
       </div>
-      <div className="space-y-6 max-h-187 overflow-y-auto pr-2 custom-scrollbar">
+      <div className="space-y-6 max-h-180 overflow-y-auto pr-2 custom-scrollbar">
         {reviews?.map((review: any) => (
           <div key={review._id} className="relative p-5 bg-white/5 rounded-2xl border-l-2 border-[#EFA765]">
             <Quote className="absolute top-2 right-4 text-white/5" size={40} />

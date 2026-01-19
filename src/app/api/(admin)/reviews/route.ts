@@ -217,7 +217,84 @@ import Product from "@/models/Product.model";
 import { reviewSchema } from "@/schemas/reviewSchema";
 import { z } from "zod";
 
-// --- POST: Customer submits a review ---
+// // --- POST: Customer submits a review ---
+// export async function POST(request: NextRequest) {
+  
+//   await dbConnect();
+
+//   try {
+//     const body = await request.json();
+//     const validatedData = reviewSchema.parse(body);
+
+//     // 1. Create the new review in the database
+//     const newReview = await ReviewModel.create(validatedData);
+
+//     // 2. IMMEDIATE UPDATE: Update Product Stats (Count and Average)
+//     const { productId, rating } = validatedData;
+//     const cleanProductId = productId.toString();
+
+//     console.log("Updating stats for product:", productId, "with new rating:", rating);
+
+//     const reviewProduct = await Product.findByIdAndUpdate(cleanProductId, [
+//       {
+//         $set: {
+//           averageRating: {
+//             $round: [
+//               {
+//                 $divide: [
+//                   {
+//                     $add: [
+//                       { $multiply: ["$averageRating", "$reviewCount"] },
+//                       rating
+//                     ]
+//                   },
+//                   { $add: ["$reviewCount", 1] }
+//                 ]
+//               },
+//               1 // Rounding to 1 decimal place (e.g., 4.7)
+//             ]
+//           },
+//           reviewCount: { $add: ["$reviewCount", 1] }
+//         }
+//       }
+//     ]);
+
+//     console.log("Product stats updated for product:", reviewProduct);
+
+//     return NextResponse.json(
+//       {
+//         success: true,
+//         message: "Thank you! Your review has been submitted and stats updated.",
+//         review: newReview,
+//       },
+//       { status: 201 }
+//     );
+//   } catch (error: any) {
+//     if (error.code === 11000) {
+//       return NextResponse.json(
+//         { success: false, message: "You already reviewed this item." },
+//         { status: 400 }
+//       );
+//     }
+//     if (error instanceof z.ZodError) {
+//       const errorMessage = error.issues.map((err) => err.message).join(", ");
+//       return NextResponse.json(
+//         { success: false, message: `Validation error: ${errorMessage}` },
+//         { status: 400 }
+//       );
+//     }
+//     return NextResponse.json(
+//       { success: false, message: "Internal server error." },
+//       { status: 500 }
+//     );
+//   }
+// }
+
+
+
+
+
+
 export async function POST(request: NextRequest) {
   await dbConnect();
 
@@ -225,66 +302,53 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = reviewSchema.parse(body);
 
-    // 1. Create the new review in the database
+    // 1. Create the new review
     const newReview = await ReviewModel.create(validatedData);
 
-    // 2. IMMEDIATE UPDATE: Update Product Stats (Count and Average)
+    // 2. Update Product Stats
     const { productId, rating } = validatedData;
+    
+    // Fetch the current product first to get current stats
+    const product = await Product.findById(productId);
+    
+    if (!product) {
+      return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
+    }
 
-    // We use a MongoDB Pipeline inside findByIdAndUpdate to calculate the new average atomically
-    // Formula: ((CurrentAvg * CurrentCount) + NewRating) / (CurrentCount + 1)
-    await Product.findByIdAndUpdate(productId, [
-      {
-        $set: {
-          averageRating: {
-            $round: [
-              {
-                $divide: [
-                  {
-                    $add: [
-                      { $multiply: ["$averageRating", "$reviewCount"] },
-                      rating
-                    ]
-                  },
-                  { $add: ["$reviewCount", 1] }
-                ]
-              },
-              1 // Rounding to 1 decimal place (e.g., 4.7)
-            ]
-          },
-          reviewCount: { $add: ["$reviewCount", 1] }
-        }
+    // Calculate new stats in JavaScript (Safer than complex pipelines)
+    const currentCount = product.reviewCount || 0;
+    const currentAvg = product.averageRating || 0;
+    
+    const newCount = currentCount + 1;
+    // Formula: ((OldAvg * OldCount) + NewRating) / NewCount
+    const newAvg = parseFloat(((currentAvg * currentCount + rating) / newCount).toFixed(1));
+
+    // Update the product using standard Mongoose update
+    await Product.findByIdAndUpdate(productId, {
+      $set: { 
+        averageRating: newAvg,
+        reviewCount: newCount 
       }
-    ]);
+    });
 
     return NextResponse.json(
       {
         success: true,
-        message: "Thank you! Your review has been submitted and stats updated.",
+        message: "Review submitted successfully.",
         review: newReview,
       },
       { status: 201 }
     );
   } catch (error: any) {
+    console.error("FINAL ERROR LOG:", error);
+    
     if (error.code === 11000) {
-      return NextResponse.json(
-        { success: false, message: "You already reviewed this item." },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: "Already reviewed." }, { status: 400 });
     }
-    if (error instanceof z.ZodError) {
-      const errorMessage = error.issues.map((err) => err.message).join(", ");
-      return NextResponse.json(
-        { success: false, message: `Validation error: ${errorMessage}` },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json(
-      { success: false, message: "Internal server error." },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: "Internal server error." }, { status: 500 });
   }
 }
+
 
 // --- GET: Admin fetches all reviews ---
 export async function GET() {
