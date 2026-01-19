@@ -185,7 +185,7 @@ export default function AdminDashboard() {
     { href: '/admin/reviews', label: 'Reviews', desc: 'Moderate feedback', icon: <Star size={24}/> },
     { href: '/admin/users', label: 'Users', desc: 'Manage customer accounts', icon: <Users size={24}/> },
     { href: '/admin/messages', label: 'Messages', desc: 'Read support inquiries', icon: <MessageSquare size={24}/> },
-    { href: '/admin/menu-management', label: 'Categories', desc: 'Organize menu structure', icon: <Utensils size={24}/> },
+    { href: '/delivery/verify', label: 'Categories', desc: 'Organize menu structure', icon: <Utensils size={24}/> },
     { href: '/admin/settings', label: 'Settings', desc: 'App configurations', icon: <Settings size={24}/> },
   ];
 
