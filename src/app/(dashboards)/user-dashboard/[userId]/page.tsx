@@ -8,7 +8,6 @@ import { PastOrdersTable } from "@/components/user-dashboard/PastData";
 import { UserReviews } from "@/components/user-dashboard/UserReviews";
 import { UserMessages } from "@/components/user-dashboard/UserMessages";
 
-// Import your Database connection and Models directly
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/models/User.model";
 import OrderModel from "@/models/Order.model";
