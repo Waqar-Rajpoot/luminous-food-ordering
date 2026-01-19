@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, Truck, ShieldCheck, QrCode, X } from "lucide-react";
+import { Loader2, CheckCircle2, Truck, ShieldCheck, QrCode, X, } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { Html5QrcodeScanner } from "html5-qrcode";
@@ -15,79 +15,100 @@ export default function DeliveryVerifyPage() {
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Fix Hydration Error: Ensure component is mounted before rendering client-specific logic
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+
     let scanner: Html5QrcodeScanner | null = null;
 
     if (isScanning) {
-      scanner = new Html5QrcodeScanner(
-        "reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-      );
+      // Delay to ensure the "reader" ID is in the DOM
+      const timer = setTimeout(() => {
+        try {
+          scanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 20, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+            false
+          );
 
-      scanner.render(
-        (decodedText) => {
-          try {
-            const data = JSON.parse(decodedText);
-            if (data.id && data.otp) {
-              setOrderId(data.id);
-              setOtp(data.otp);
-              toast.success("QR Scanned Successfully");
-              setIsScanning(false);
-            }
-          } catch {
-            // Fallback if QR only contains the Order ID string
-            setOrderId(decodedText);
-            toast.info("Order ID detected");
-            setIsScanning(false);
-          }
-        },
-        () => { /* Silent error for continuous scanning */ }
-      );
+          scanner.render(
+            (decodedText) => {
+              try {
+                const data = JSON.parse(decodedText);
+                if (data.id && data.otp) {
+                  setOrderId(data.id);
+                  setOtp(data.otp);
+                  toast.success("Identity Detected");
+                  setIsScanning(false);
+                }
+              } catch {
+                setOrderId(decodedText);
+                toast.info("Order ID scanned");
+                setIsScanning(false);
+              }
+            },
+            () => {}
+          );
+        } catch (err) {
+          console.error("Scanner Error:", err);
+        }
+      }, 300);
+
+      return () => {
+        clearTimeout(timer);
+        if (scanner) {
+          scanner.clear().catch(console.error);
+        }
+      };
     }
-
-    return () => {
-      if (scanner) {
-        scanner.clear().catch((error) => console.error("Scanner cleanup failed", error));
-      }
-    };
-  }, [isScanning]);
+  }, [isScanning, mounted]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!orderId || !otp) {
-      toast.error("Please fill in both fields");
-      return;
-    }
+    if (!orderId || !otp) return toast.error("Credentials required");
 
     setLoading(true);
     try {
-      const response = await axios.post("/api/delivery/verify-otp", { orderId, otp });
+      const response = await axios.post("/api/orders/verify-otp", { orderId, otp });
       if (response.data.success) {
         setIsSuccess(true);
-        toast.success("Delivery Verified!");
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Verification failed");
     } finally {
-      setLoading(true); // Keep loading state until success view triggers
-      setTimeout(() => setLoading(false), 500);
+      setLoading(false);
     }
   };
 
+  // Prevent rendering until client-side to stop hydration errors
+  if (!mounted) return null;
+
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-[#141F2D] flex items-center justify-center p-6 text-[#EFA765]">
-        <Card className="bg-[#1D2B3F] border-[#EFA765]/20 p-10 text-center max-w-md w-full rounded-3xl">
-          <CheckCircle2 className="h-20 w-20 text-green-400 mx-auto mb-4" />
-          <h2 className="text-3xl font-bold mb-2">Success!</h2>
-          <p className="text-white/60 mb-6 text-sm">Order #{orderId} has been marked as Delivered.</p>
+      <div className="min-h-screen bg-[#141F2D] flex items-center justify-center p-6">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#EFA765]/5 to-transparent pointer-events-none" />
+        <Card className="bg-[#1D2B3F]/50 backdrop-blur-xl border-[#EFA765]/20 p-12 text-center max-w-md w-full rounded-[3rem] shadow-2xl border">
+          <div className="relative mx-auto w-24 h-24 mb-8">
+            <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping" />
+            <div className="relative bg-green-500 h-24 w-24 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(34,197,94,0.3)]">
+              <CheckCircle2 className="h-14 w-14 text-[#141F2D]" />
+            </div>
+          </div>
+          <h2 className="text-4xl font-black mb-3 text-[#EFA765] font-[Yeseve One]">Delivered</h2>
+          <p className="text-gray-400 mb-10 text-sm leading-relaxed">
+            Order <span className="text-white font-mono font-bold">#{orderId}</span> has been confirmed.
+          </p>
           <Button 
             onClick={() => { setIsSuccess(false); setOrderId(""); setOtp(""); }}
-            className="bg-[#EFA765] text-[#141F2D] hover:bg-[#EFA765]/90 rounded-full w-full font-bold h-12"
+            className="bg-[#EFA765] text-[#141F2D] hover:bg-white transition-all duration-500 rounded-2xl w-full font-bold h-14 text-lg shadow-lg shadow-[#EFA765]/10"
           >
-            Verify Another Order
+            Process Next Order
           </Button>
         </Card>
       </div>
@@ -95,85 +116,111 @@ export default function DeliveryVerifyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#141F2D] flex items-center justify-center p-4 text-[#EFA765]">
-      <Card className="bg-[#1D2B3F] border-[#EFA765]/20 max-w-md w-full rounded-3xl shadow-2xl relative overflow-hidden">
+    <div className="min-h-screen bg-[#141F2D] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Aesthetic Elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#EFA765] opacity-[0.03] blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#EFA765] opacity-[0.03] blur-[120px] rounded-full" />
+
+      <Card className="bg-[#1D2B3F]/40 backdrop-blur-xl border-[#EFA765]/20 max-w-md w-full rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.4)] relative overflow-hidden">
         
         {/* QR Scanner Overlay */}
         {isScanning && (
-          <div className="absolute inset-0 z-50 bg-[#1D2B3F] flex flex-col p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold">Scan QR Code</h3>
-              <Button size="icon" variant="ghost" onClick={() => setIsScanning(false)} className="text-[#EFA765]">
-                <X className="h-6 w-6" />
+          <div className="absolute inset-0 z-50 bg-[#141F2D] flex flex-col p-8 animate-in fade-in zoom-in duration-300">
+            <div className="flex justify-between items-center mb-10">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse" />
+                <h3 className="font-bold text-[#EFA765] uppercase tracking-widest text-xs">Live Scanner</h3>
+              </div>
+              <Button size="icon" variant="ghost" onClick={() => setIsScanning(false)} className="text-white/50 hover:text-white hover:bg-white/10 rounded-full">
+                <X className="h-7 w-7" />
               </Button>
             </div>
-            <div id="reader" className="overflow-hidden rounded-2xl border border-[#EFA765]/30 bg-black"></div>
-            <p className="text-white/40 text-xs text-center mt-4 italic">Align customer QR code within the frame</p>
+            
+            <div className="relative group mx-auto w-full max-w-[280px]">
+              <div id="reader" className="overflow-hidden rounded-[2rem] border-2 border-[#EFA765]/30 bg-black aspect-square shadow-2xl"></div>
+              <div className="absolute top-0 left-0 w-full h-[2px] bg-[#EFA765] shadow-[0_0_20px_#EFA765] animate-[scan_2.5s_linear_infinite] z-10" />
+            </div>
+
+            <p className="text-white/40 text-[11px] text-center mt-12 italic leading-relaxed px-6">
+              Align the customer&apos;s digital receipt within the frame to auto-fill details.
+            </p>
           </div>
         )}
 
-        <CardHeader className="text-center pt-8">
-          <div className="bg-[#EFA765]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Truck className="h-8 w-8 text-[#EFA765]" />
+        <CardHeader className="text-center pt-12">
+          <div className="bg-[#EFA765]/10 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-[#EFA765]/20">
+            <Truck className="h-10 w-10 text-[#EFA765]" />
           </div>
-          <CardTitle className="text-2xl font-bold">Staff Delivery Portal</CardTitle>
-          <p className="text-white/40 text-xs mt-1 uppercase tracking-widest">Verify Customer OTP</p>
+          <CardTitle className="text-3xl font-black font-[Yeseve One] tracking-tight text-[#EFA765]">Staff Portal</CardTitle>
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em] mt-2 opacity-60">Verification System</p>
         </CardHeader>
 
-        <CardContent className="px-8 pb-10 space-y-6">
+        <CardContent className="px-8 pb-12 space-y-8">
           <Button 
             type="button"
             onClick={() => setIsScanning(true)}
-            className="w-full bg-[#EFA765]/10 border border-[#EFA765] text-[#EFA765] hover:bg-[#EFA765] hover:text-[#141F2D] h-16 rounded-2xl flex gap-3 transition-all font-bold"
+            className="w-full bg-[#EFA765]/5 border border-[#EFA765]/30 text-[#EFA765] hover:bg-[#EFA765] hover:text-[#141F2D] h-20 rounded-3xl flex items-center justify-center gap-4 transition-all duration-500 font-black group"
           >
-            <QrCode className="h-6 w-6" /> Scan Customer Phone
+            <div className="p-2 bg-[#EFA765]/10 rounded-xl group-hover:bg-[#141F2D]/20 transition-colors">
+              <QrCode className="h-6 w-6" /> 
+            </div>
+            <span className="text-sm tracking-wide">SCAN RECEIPT</span>
           </Button>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/10"></span></div>
-            <div className="relative flex justify-center text-[10px] uppercase tracking-tighter"><span className="bg-[#1D2B3F] px-3 text-white/30">Or Manual Entry</span></div>
+          <div className="relative flex items-center">
+            <div className="flex-grow border-t border-white/5"></div>
+            <span className="mx-4 text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Manual Entry</span>
+            <div className="flex-grow border-t border-white/5"></div>
           </div>
 
-          <form onSubmit={handleVerify} className="space-y-5">
+          <form onSubmit={handleVerify} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase ml-1 opacity-70">Order ID</label>
+              <label className="text-[10px] font-black uppercase ml-1 text-gray-500 tracking-[0.1em]">Order Reference</label>
               <Input 
-                placeholder="ORDER-ID-HERE" 
+                placeholder="Ex: ORDER-12345" 
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value.toUpperCase())}
-                className="bg-[#141F2D] border-[#EFA765]/20 text-white h-12 rounded-xl focus-visible:ring-[#EFA765]/50"
+                className="bg-[#141F2D]/40 border-white/5 text-white h-14 rounded-2xl focus:border-[#EFA765]/50 focus:ring-0 text-lg font-bold transition-all"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase ml-1 opacity-70">6-Digit OTP</label>
+              <label className="text-[10px] font-black uppercase ml-1 text-gray-500 tracking-[0.1em]">Delivery OTP</label>
               <Input 
                 type="text"
-                placeholder="000000"
+                placeholder="••••••"
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="bg-[#141F2D] border-[#EFA765]/20 text-white h-12 rounded-xl text-center text-2xl tracking-[0.4em] font-mono focus-visible:ring-[#EFA765]/50"
+                className="bg-[#141F2D]/40 border-white/5 text-[#EFA765] h-16 rounded-2xl text-center text-3xl tracking-[0.4em] font-black focus:border-[#EFA765] transition-all"
               />
             </div>
 
             <Button 
               type="submit" 
               disabled={loading || !orderId || !otp}
-              className="w-full bg-[#EFA765] text-[#141F2D] hover:bg-[#EFA765]/90 h-14 rounded-full text-lg font-bold transition-all shadow-lg shadow-[#EFA765]/10"
+              className="w-full bg-[#EFA765] text-[#141F2D] hover:bg-white h-16 rounded-2xl text-lg font-black transition-all duration-500 shadow-xl shadow-[#EFA765]/5 group"
             >
               {loading ? (
                 <Loader2 className="animate-spin h-6 w-6" />
               ) : (
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5" />
-                  Complete Delivery
+                  <ShieldCheck className="h-6 w-6" />
+                  CONFIRM DELIVERY
                 </div>
               )}
             </Button>
           </form>
         </CardContent>
       </Card>
+
+      <style jsx global>{`
+        @keyframes scan {
+          0% { transform: translateY(0); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: translateY(280px); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }

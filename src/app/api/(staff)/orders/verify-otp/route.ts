@@ -1,15 +1,19 @@
+
+
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order.model";
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     await dbConnect();
-    const { orderId, otp } = await req.json();
+    const { orderId, otp } = await request.json();
 
-    // Clean the data: Trim spaces and handle potential formatting issues
     const cleanOrderId = orderId?.trim();
     const cleanOtp = otp?.trim();
+
+    console.log("Verifying OTP for Order ID:", cleanOrderId);
+    console.log("Provided OTP:", cleanOtp);
 
     if (!cleanOrderId || !cleanOtp) {
       return NextResponse.json(
@@ -17,23 +21,18 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const order = await Order.findOne({ 
-      orderId: { $regex: new RegExp(`^${cleanOrderId}$`, "i") } 
-    });
 
+    const order = await Order.findOne({ orderId: { $regex: new RegExp(`^${cleanOrderId}$`, "i") }});
 
     if (!order) {
-      return NextResponse.json({ message: "Order not found in database" }, { status: 404 });
+      return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
     if (order.isOTPVerified) {
-      return NextResponse.json(
-        { message: "Order is already verified and delivered" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Order already verified" }, { status: 400 });
     }
 
-    // 2. Validate OTP (Ensure both are compared as strings)
+        // 2. Validate OTP (Ensure both are compared as strings)
     if (order.deliveryOTP.toString() !== cleanOtp.toString()) {
       return NextResponse.json(
         { message: "Invalid Verification Code" },
@@ -52,23 +51,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Update Order Status
+    // Success: Update Order
     order.isOTPVerified = true;
     order.shippingProgress = "delivered";
     await order.save();
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Order delivered and verified successfully!",
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ 
+      success: true, 
+      message: "Order verified and delivered successfully!" 
+    });
+
   } catch (error: any) {
-    console.error("Verification Error:", error);
-    return NextResponse.json(
-      { message: "Internal Server Error", error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
+

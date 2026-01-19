@@ -1,145 +1,19 @@
-// import { Suspense } from 'react';
-// import { redirect } from 'next/navigation';
-// import Stripe from 'stripe';
-// import { Loader2, CheckCircle } from 'lucide-react';
-// import dbConnect from '@/lib/dbConnect'; 
-// import Order from '@/models/Order.model';
-// import Product from '@/models/Product.model';
-// import mongoose from 'mongoose';
-// import Link from 'next/link';
-// import { Button } from '@/components/ui/button';
-// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-//   apiVersion: "2025-07-30.basil", 
-// });
-
-// async function PaymentDetailsProcessor({ sessionId, orderId }: { sessionId: string; orderId: string }) {
-//   await dbConnect();
-
-//   try {
-//     // 1. Verify session with Stripe
-//     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
-
-//     if (!stripeSession || stripeSession.payment_status !== 'paid') {
-//       console.warn(`SERVER: Payment for session ${sessionId} was not successful.`);
-//       await Order.findOneAndUpdate({ orderId: orderId }, { orderStatus: 'canceled', stripeSessionId: sessionId });
-//       redirect(`/payment-cancel`);
-//     }
-
-//     // 2. Find the order in our database
-//     const order = await Order.findOne({ orderId: orderId });
-
-//     if (!order) {
-//       console.error(`SERVER: Order ${orderId} not found in DB.`);
-//       redirect(`/order-details/${orderId}?status=error`);
-//     }
-
-//     if (order.orderStatus === 'pending') {
-//       order.orderStatus = 'paid';
-//       order.stripeSessionId = sessionId;
-
-//       const updateSalesPromises = order.items.map((item: any) => {
-//         console.log(`SERVER: Increasing salesCount for ${item.name} (ID: ${item.id}) by ${item.quantity}`);
-        
-//         return Product.updateOne(
-//           { _id: new mongoose.Types.ObjectId(item.id as string) },
-//           { $inc: { salesCount: Number(item.quantity) } } 
-//         );
-//       });
-
-//       await Promise.all([
-//         order.save(),
-//         ...updateSalesPromises
-//       ]);
-//     }
-//     return (
-//       <div className="flex flex-col justify-center items-center min-h-screen bg-[#141F2D] p-6 text-[#EFA765] font-[Varela Round]">
-//         <Card className="bg-[#1D2B3F] p-10 rounded-3xl shadow-2xl max-w-md mx-auto text-center border border-[#EFA765]/20">
-//           <CardHeader>
-//             <div className="flex items-center justify-center mb-6">
-//               <CheckCircle className="h-20 w-20 text-green-500 animate-pulse" />
-//             </div>
-//             <CardTitle className="text-4xl font-extrabold text-[#EFA765] font-[Yeseve One]">
-//               Payment Successful!
-//             </CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <p className="text-white text-opacity-80 mt-3 text-lg">Thank you for your purchase. Your order has been placed.</p>
-//             <p className="text-white text-opacity-80 mt-1 text-md">Order ID: #{orderId}</p>
-//             <Link href={`/order-details/${orderId}`} passHref>
-//               <Button className="mt-8 w-full bg-[#EFA765] text-[#141F2D] hover:bg-[#EFA765]/80 transition-colors duration-300 rounded-full">
-//                 View Order Details
-//               </Button>
-//             </Link>
-//           </CardContent>
-//         </Card>
-//       </div>
-//     );
-
-//   } catch (error: any) {
-//     if (error && typeof error === 'object' && error.digest && error.digest.startsWith('NEXT_REDIRECT')) {
-//       throw error;
-//     }
-//     await Order.findOneAndUpdate({ orderId: orderId }, { orderStatus: 'canceled', stripeSessionId: sessionId });
-//     redirect(`/payment-cancel`);
-//   }
-// }
-
-// export default async function PaymentSuccessPage({
-//   searchParams,
-// }: {
-//   searchParams: Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>;
-// }) {
-//   const resolvedSearchParams = await searchParams;
-//   const sessionId = resolvedSearchParams.session_id;
-//   const orderId = resolvedSearchParams.order_id;
-
-//   if (typeof sessionId !== 'string' || typeof orderId !== 'string') {
-//     redirect('/');
-//   }
-
-//   return (
-//     <Suspense
-//       fallback={
-//         <div className="flex flex-col justify-center items-center min-h-screen bg-[#141F2D] p-6 text-[#EFA765] font-[Varela Round]">
-//           <div className="bg-[#1D2B3F] p-10 rounded-3xl shadow-2xl max-w-md mx-auto text-center border border-[#EFA765]/20">
-//             <div className="text-7xl mb-6 text-[#EFA765] animate-pulse">
-//               <Loader2 className="h-20 w-20 animate-spin mx-auto" />
-//             </div>
-//             <h1 className="text-4xl font-extrabold text-white font-[Yeseve One]">Verifying Payment...</h1>
-//             <p className="text-white text-opacity-80 mt-3 text-lg">Please do not close this window.</p>
-//           </div>
-//         </div>
-//       }
-//     >
-//       <PaymentDetailsProcessor sessionId={sessionId} orderId={orderId} />
-//     </Suspense>
-//   );
-// }
-
-
-
-
-
-
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import Stripe from 'stripe';
-import { Loader2, CheckCircle } from 'lucide-react';
+import { Loader2, Check, ArrowRight, ShoppingBag } from 'lucide-react';
 import dbConnect from '@/lib/dbConnect'; 
 import Order from '@/models/Order.model';
 import Product from '@/models/Product.model';
 import mongoose from 'mongoose';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-01-27.basil" as any, // Updated to a stable version string or your preferred version
+  apiVersion: "2024-12-18.acacia" as any, 
 });
 
-// Define the correct Next.js 15 Page Props interface
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
@@ -148,80 +22,99 @@ async function PaymentDetailsProcessor({ sessionId, orderId }: { sessionId: stri
   await dbConnect();
 
   try {
-    // 1. Verify session with Stripe
     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!stripeSession || stripeSession.payment_status !== 'paid') {
-      console.warn(`SERVER: Payment for session ${sessionId} was not successful.`);
       await Order.findOneAndUpdate({ orderId: orderId }, { orderStatus: 'canceled', stripeSessionId: sessionId });
       redirect(`/payment-cancel`);
     }
 
-    // 2. Find the order in our database
     const order = await Order.findOne({ orderId: orderId });
 
     if (!order) {
-      console.error(`SERVER: Order ${orderId} not found in DB.`);
       redirect(`/order-details/${orderId}?status=error`);
     }
 
-    // 3. Update status only if it's currently pending
     if (order.orderStatus === 'pending') {
       order.orderStatus = 'paid';
       order.stripeSessionId = sessionId;
 
       const updateSalesPromises = order.items.map((item: any) => {
-        console.log(`SERVER: Increasing salesCount for ${item.name} by ${item.quantity}`);
-        
         return Product.updateOne(
           { _id: new mongoose.Types.ObjectId(item.id as string) },
           { $inc: { salesCount: Number(item.quantity) } } 
         );
       });
 
-      await Promise.all([
-        order.save(),
-        ...updateSalesPromises
-      ]);
+      await Promise.all([order.save(), ...updateSalesPromises]);
     }
-
-    return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-[#141F2D] p-6 text-[#EFA765] font-[Varela Round]">
-        <Card className="bg-[#1D2B3F] p-10 rounded-3xl shadow-2xl max-w-md mx-auto text-center border border-[#EFA765]/20">
-          <CardHeader>
-            <div className="flex items-center justify-center mb-6">
-              <CheckCircle className="h-20 w-20 text-green-500 animate-pulse" />
-            </div>
-            <CardTitle className="text-4xl font-extrabold text-[#EFA765] font-[Yeseve One]">
-              Payment Successful!
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-white text-opacity-80 mt-3 text-lg">Thank you for your purchase. Your order has been placed.</p>
-            <p className="text-white text-opacity-80 mt-1 text-md">Order ID: #{orderId}</p>
-            <Link href={`/order-details/${orderId}`} passHref>
-              <Button className="mt-8 w-full bg-[#EFA765] text-[#141F2D] hover:bg-[#EFA765]/80 transition-colors duration-300 rounded-full">
-                View Order Details
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-
   } catch (error: any) {
-    // Crucial: Next.js redirect() throws a specific error that must be re-thrown
     if (error && typeof error === 'object' && error.digest && error.digest.startsWith('NEXT_REDIRECT')) {
       throw error;
     }
-    console.error("Payment Success Processor Error:", error);
     await Order.findOneAndUpdate({ orderId: orderId }, { orderStatus: 'canceled', stripeSessionId: sessionId });
     redirect(`/payment-cancel`);
   }
+
+  return (
+    <div className="relative flex flex-col justify-center items-center min-h-screen bg-[#141F2D] p-6 overflow-hidden">
+      {/* Premium Background Ambient Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#EFA765] opacity-[0.05] blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#EFA765] opacity-[0.05] blur-[120px] rounded-full" />
+
+      <Card className="relative z-10 bg-[#1D2B3F]/50 backdrop-blur-xl border border-[#EFA765]/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-lg w-full rounded-[2.5rem] overflow-hidden">
+        <CardContent className="pt-12 pb-10 px-8 text-center">
+          {/* Animated Success Icon Ring */}
+          <div className="flex items-center justify-center mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-green-500/20 animate-ping" />
+              <div className="relative bg-green-500 h-20 w-20 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.4)]">
+                <Check className="h-10 w-10 text-[#141F2D] stroke-[3px]" />
+              </div>
+            </div>
+          </div>
+
+          <h1 className="text-4xl md:text-5xl font-black text-[#EFA765] mb-4 tracking-tight font-[Yeseve One]">
+            Order Confirmed
+          </h1>
+          
+          <div className="inline-block px-4 py-1.5 rounded-full bg-[#EFA765]/10 border border-[#EFA765]/20 mb-6">
+            <p className="text-[#EFA765] text-sm font-bold uppercase tracking-widest">
+              ID: {orderId}
+            </p>
+          </div>
+
+          <p className="text-gray-300 text-lg leading-relaxed max-w-xs mx-auto mb-10">
+            Your payment was processed successfully. We&apos;re getting your order ready!
+          </p>
+
+          <div className="grid grid-cols-1 gap-4">
+            <Link href={`/order-details/${orderId}`} className="w-full">
+              <Button className="w-full bg-[#EFA765] text-[#141F2D] hover:bg-white transition-all duration-500 rounded-2xl h-14 text-lg font-bold group shadow-lg shadow-[#EFA765]/10">
+                Track Your Order
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+
+            <Link href="/" className="w-full">
+              <Button variant="ghost" className="w-full text-gray-400 hover:text-[#EFA765] hover:bg-transparent transition-colors h-12">
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                Return to Shop
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Footer Branding */}
+      <p className="mt-8 text-gray-500 text-sm font-medium tracking-tighter uppercase opacity-50 italic">
+        Secured by Stripe Intelligence
+      </p>
+    </div>
+  );
 }
 
 export default async function PaymentSuccessPage({ searchParams }: PageProps) {
-  // Next.js 15 requires awaiting searchParams
   const resolvedSearchParams = await searchParams;
   const sessionId = resolvedSearchParams.session_id;
   const orderId = resolvedSearchParams.order_id;
@@ -233,13 +126,12 @@ export default async function PaymentSuccessPage({ searchParams }: PageProps) {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col justify-center items-center min-h-screen bg-[#141F2D] p-6 text-[#EFA765] font-[Varela Round]">
-          <div className="bg-[#1D2B3F] p-10 rounded-3xl shadow-2xl max-w-md mx-auto text-center border border-[#EFA765]/20">
-            <div className="text-7xl mb-6 text-[#EFA765] animate-pulse">
-              <Loader2 className="h-20 w-20 animate-spin mx-auto" />
-            </div>
-            <h1 className="text-4xl font-extrabold text-white font-[Yeseve One]">Verifying Payment...</h1>
-            <p className="text-white text-opacity-80 mt-3 text-lg">Please do not close this window.</p>
+        <div className="flex flex-col justify-center items-center min-h-screen bg-[#141F2D] text-[#EFA765]">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 animate-spin text-[#EFA765] opacity-50" />
+            <p className="font-bold tracking-widest uppercase text-sm animate-pulse">
+              Authenticating Transaction...
+            </p>
           </div>
         </div>
       }
