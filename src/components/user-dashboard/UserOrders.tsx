@@ -1,140 +1,138 @@
 "use client";
-import React, { useState } from "react";
-import { XCircle, Loader2 } from 'lucide-react';
+import { ChevronRight, Package, XCircle, Loader2, CreditCard, Clock } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface Order {
-  _id: string;
-  orderId: string;
-  customerName: string;
-  shippingProgress: 'processing' | 'shipped' | 'delivered' | 'canceled' | string;
-  orderStatus: 'paid' | 'pending' | 'canceled' | string;
-  finalAmount: number;
-  createdAt: string;
-}
-
-export const UserOrders = ({ recentOrders }: { recentOrders: Order[] | any }) => {
-  const [loadingOrderId, setLoadingOrderId] = useState<string | null>(null);
-
+export const UserOrders = ({ recentOrders }: any) => {
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleCancelOrder = async (orderId: string) => {
-    if (loadingOrderId) return;
+  const handleCancelOrder = async (id: string) => {
+    if (cancellingId) return;
     
-    console.log(`Attempting to cancel order: ${orderId}`);
-    setLoadingOrderId(orderId);
+    const confirmCancel = confirm("Are you sure you want to cancel this order?");
+    if (!confirmCancel) return;
+
+    setCancellingId(id);
 
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await fetch(`/api/orders/${id}`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ shippingProgress: 'canceled' }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       if (response.ok) {
-        router.refresh();
+        router.refresh(); // Refreshes Server Component data
+      } else {
+        alert("Failed to cancel order. Please contact support.");
       }
-
-
     } catch (error) {
-      console.error(`Error canceling order ${orderId}:`, error);
+      console.error("Cancellation error:", error);
     } finally {
-      setLoadingOrderId(null);
+      setCancellingId(null);
     }
   };
 
   return (
-    <div className="bg-slate-800 p-6 rounded-lg shadow-lg w-full max-w-7xl text-white">
-      <h3 className="text-2xl font-semibold mb-4 third-heading">
-        Recent Orders
-      </h3>
-      <hr className="border-slate-700 my-8" />
-      {recentOrders.length === 0 ? (
-        <p className="text-gray-400">No recent orders found.</p>
-      ) : (
-        <div className="max-h-[400px] overflow-y-auto pr-2">
-          <ul className="space-y-4">
-            {recentOrders.map((order: Order) => {
-              const isCancellable = 
-                order.shippingProgress !== "shipped" && 
-                order.shippingProgress !== "delivered" && 
-                order.shippingProgress !== "canceled";
+    <div className="p-6 sm:p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[#EFA765]/10 rounded-lg">
+            <Package className="text-[#EFA765]" size={24} />
+          </div>
+          <h3 className="text-xl font-black text-white">Recent Activity</h3>
+        </div>
+        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">
+          {recentOrders?.length || 0} Orders
+        </span>
+      </div>
 
-              const isLoading = loadingOrderId === order._id;
+      <div className="space-y-4">
+        {!recentOrders || recentOrders.length === 0 ? (
+          <div className="text-center py-10 bg-white/5 rounded-[1.5rem] border border-dashed border-white/10">
+            <p className="text-slate-500 text-sm">No recent culinary journeys found.</p>
+          </div>
+        ) : (
+          recentOrders.map((order: any) => {
+            const isCancellable = order.shippingProgress === "processing";
+            const isDelivered = order.shippingProgress === "delivered";
+            const isCanceled = order.shippingProgress === "canceled";
 
-              return (
-                <li
-                  key={order._id}
-                  className="border-b mx-1 border-slate-700 pb-4 last:border-b-0 flex justify-between items-start sm:items-center"
-                >
-                  <Link
-                    href={`/order-details/${order.orderId}`}
-                    className="flex-grow cursor-pointer transition-colors duration-200 hover:bg-slate-700 p-3 -m-3 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center no-underline text-white w-full sm:w-auto"
-                  >
-                    <div className="flex-grow">
-                      <p className="font-semibold">
-                        Order ID: {order._id.substring(0, 15)}...
-                      </p>
-                      <p className="text-md text-gray-300">
-                        Customer: {order.customerName}
-                      </p>
-                      <p>Shipping Status:
-                      <span
-                        className={`mt-2 sm:mt-0 ml-2 px-2 py-1 rounded-full text-xs font-semibold uppercase border ${order.shippingProgress === "processing" ? "bg-yellow-700/20 text-yellow-300 border-yellow-700" : order.shippingProgress === "shipped" ? "bg-blue-700/20 text-blue-300 border-blue-700/40" : order.shippingProgress === "delivered" ? "bg-green-700/20 text-green-300 border-green-700/40" : order.shippingProgress === "canceled" ? "bg-red-700/20 text-red-300 border-red-700/40" : "bg-gray-700/20 text-gray-300 border-gray-700/40"}`}
-                      >
+            return (
+              <div key={order._id} className="relative group bg-[#1e293b]/40 rounded-[1.5rem] p-5 border border-white/5 hover:border-[#EFA765]/30 transition-all">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  
+                  {/* Left: Primary Info */}
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-black text-[#EFA765] bg-[#EFA765]/10 px-2 py-1 rounded-md border border-[#EFA765]/20">
+                        {order.orderId}
+                      </span>
+                      <span className={`text-[10px] px-2 py-1 rounded-md font-bold uppercase border ${
+                        isDelivered ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 
+                        isCanceled ? 'border-red-500/30 text-red-400 bg-red-500/10' :
+                        'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                      }`}>
                         {order.shippingProgress}
                       </span>
-                      </p>
-                      <p className="text-sm py-1 font-bold text-[#EFA765]">
-                        Paid Amount: {order.finalAmount} PKR
-                      </p>
-                      <p className="text-gray-400 text-xs mt-1">
-                        Placed on {new Date(order.createdAt).toLocaleDateString()}
-                      </p>
-                    <p className="text-gray-400 text-xs mt-1">See more details...</p>
-
                     </div>
-                    <span
-                      className={`mt-2 sm:mt-0 px-3 py-1 rounded-full text-xs font-semibold uppercase border ${order.orderStatus === "paid" ? "bg-green-700/20 text-green-300 border-green-700/20" : order.orderStatus === "pending" ? "bg-yellow-700/20 text-yellow-300 border-yellow-700/40" : order.orderStatus === "canceled" ? "bg-red-700/20 text-red-300 border-red-700/40" : "bg-gray-700/20 text-gray-300 border-gray-700/40"}`}
-                    >
-                      {order.orderStatus}
-                    </span>
-                  </Link>
+                    
+                    <div>
+                      <h4 className="text-xl font-black text-white">PKR {order.finalAmount.toLocaleString()}</h4>
+                      <div className="flex items-center gap-4 mt-1 text-slate-400">
+                        <div className="flex items-center gap-1 text-[11px] font-medium">
+                          <Clock size={12} />
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </div>
+                        <div className="flex items-center gap-1 text-[11px] font-medium">
+                          <CreditCard size={12} />
+                          {order.orderStatus}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                  {isCancellable && (
-                    <button
-                      onClick={() => handleCancelOrder(order._id)}
-                      disabled={isLoading}
-                      className={`
-                        ml-4 flex items-center justify-center py-1 px-3 text-sm font-medium rounded-full transition-all duration-300 transform-gpu
-                        ${isLoading 
-                          ? 'bg-red-900/40 text-red-400 cursor-not-allowed animate-pulse' 
-                          : 'bg-red-700/20 text-red-300 border-red-700/40 border hover:bg-red-700/40 hover:cursor-pointer active:scale-95'
-                        }
-                      `}
-                      aria-label={`Cancel order ${order._id.substring(0, 10)}`}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <XCircle className="h-5 w-5 mr-1" />
-                      )}
-                      <span className="hidden sm:inline">
-                        {isLoading ? 'Cancelling...' : 'Cancel'}
-                      </span>
-                    </button>
+                  {/* Center: OTP Visualization (Only for non-finished orders) */}
+                  {!isDelivered && !isCanceled && (
+                    <div className="bg-gradient-to-b from-[#EFA765]/10 to-transparent border border-[#EFA765]/20 p-3 rounded-2xl min-w-[120px] text-center">
+                      <p className="text-[9px] uppercase text-[#EFA765] font-black tracking-tighter mb-1">Security Token</p>
+                      <p className="text-xl font-black tracking-[0.2em] text-[#EFA765] drop-shadow-[0_0_10px_rgba(239,167,101,0.3)]">
+                        {order.deliveryOTP || '----'}
+                      </p>
+                    </div>
                   )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
+
+                  {/* Right: Actions */}
+                  <div className="flex items-center gap-3">
+                    <Link 
+                      href={`/order-details/${order.orderId}`} 
+                      className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-white/5 rounded-xl text-white hover:bg-[#EFA765] hover:text-black transition-all font-bold text-xs"
+                    >
+                      DETAILS <ChevronRight size={16} />
+                    </Link>
+                    
+                    {isCancellable && (
+                      <button 
+                        onClick={() => handleCancelOrder(order._id)}
+                        disabled={cancellingId === order._id}
+                        className="p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                      >
+                        {cancellingId === order._id ? (
+                          <Loader2 size={20} className="animate-spin" />
+                        ) : (
+                          <XCircle size={20} />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };
-
-export default UserOrders;
