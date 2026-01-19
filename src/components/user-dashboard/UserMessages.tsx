@@ -9,7 +9,7 @@ export const UserMessages = ({ messages }: any) => {
         <p className="text-gray-400">No messages found.</p>
       ) : (
         // --- Added Fixed Height (max-h-[400px]) and Vertical Scrolling (overflow-y-auto) ---
-        <div className="max-h-100 overflow-y-auto pr-2">
+        <div className="max-h-124.5 overflow-y-auto pr-2">
           <ul className="space-y-4">
             {messages.map((message: any) => (
               <li 
