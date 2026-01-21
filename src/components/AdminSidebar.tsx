@@ -40,6 +40,7 @@ export default function AdminNavbar() {
     { href: '/admin/reviews', label: 'Reviews', icon: Star },
     { href: '/admin/users', label: 'Users', icon: Users },
     { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
+    { href: '/admin/staff-management', label: 'Staff', icon: ShieldCheck },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 

@@ -23,7 +23,6 @@ import { z } from 'zod';
 export const shippingAddressSchema = z.object({
   fullName: z.string().min(3, "Full name is required").max(100, "Full name too long"),
   addressLine1: z.string().min(5, "Address line 1 is required").max(200, "Address too long"),
-  // .or(z.literal("")) handles empty strings from HTML inputs
   addressLine2: z.string().max(200, "Address line 2 too long").optional().or(z.literal("")),
   city: z.string().min(2, "City is required").max(100, "City too long"),
   state: z.string().min(2, "State/Province is required").max(100, "State/Province too long"),

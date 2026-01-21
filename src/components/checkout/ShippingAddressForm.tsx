@@ -23,7 +23,7 @@ const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({ onFormChange,
       city: "",
       state: "",
       postalCode: "",
-      country: "Pakistan",
+      country: "",
       phoneNumber: "",
     },
     mode: "onChange",
@@ -149,7 +149,7 @@ const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({ onFormChange,
                 <FormItem>
                   <FormLabel className="text-[#EFA765]">Country</FormLabel>
                   <FormControl>
-                    <Input {...field} className="bg-[#2a3b52] border-[#EFA765]/30 text-white focus:ring-[#EFA765]" />
+                    <Input placeholder="Pakistan" {...field} className="bg-[#2a3b52] border-[#EFA765]/30 text-white focus:ring-[#EFA765]" />
                   </FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>

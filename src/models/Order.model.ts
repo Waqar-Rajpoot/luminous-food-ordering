@@ -23,6 +23,12 @@ export interface IOrder extends Document {
   stripeSessionId?: string;
   orderId: string;
   userId: mongoose.Types.ObjectId;
+  assignedStaffId?: mongoose.Types.ObjectId;
+  deliveryStatus: "pending" | "assigned" | "picked-up" | "out-for-delivery" | "delivered" | "failed";
+  assignmentDate?: Date;
+  deliveryEarning: number;
+  isEarningsPaid: boolean;
+  paidAt?: Date;
   customerEmail: string;
   customerName?: string;
   totalAmount: number;
@@ -56,7 +62,7 @@ const ShippingAddressSchema: Schema = new mongoose.Schema({
   city: { type: String, required: true },
   state: { type: String, required: true },
   postalCode: { type: String, required: true },
-  country: { type: String, required: true, default: "Pakistan" },
+  country: { type: String, required: true },
   phoneNumber: { type: String, required: true },
 });
 
@@ -70,6 +76,29 @@ const OrderSchema: Schema<IOrder> = new mongoose.Schema(
         index: true 
     },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    assignedStaffId: { 
+      type: Schema.Types.ObjectId, 
+      ref: "User", 
+      default: null 
+    },
+    deliveryStatus: {
+      type: String,
+      enum: ["pending", "assigned", "picked-up", "out-for-delivery", "delivered", "failed"],
+      default: "pending",
+    },
+    assignmentDate: { type: Date },
+    deliveryEarning: {
+    type: Number,
+    default: 0,
+    },
+    isEarningsPaid: {
+      type: Boolean,
+      default: false,
+    },
+    paidAt: {
+      type: Date,
+      default: null,
+    },
     customerEmail: { type: String, required: true },
     customerName: { type: String },
     totalAmount: { type: Number, required: true },

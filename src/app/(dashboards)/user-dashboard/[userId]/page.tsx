@@ -1,6 +1,10 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
 import { redirect, notFound } from "next/navigation";
+import Link from "next/link"; // Added for routing
+import { Truck, ChevronRight } from "lucide-react"; // Added for UI
+import { Button } from "@/components/ui/button";
+
 import UserProfile from "@/components/user-dashboard/UserProfile";
 import MetricCards from "@/components/user-dashboard/MatricsCards";
 import { UserOrders } from "@/components/user-dashboard/UserOrders";
@@ -21,16 +25,14 @@ interface PageProps {
 export default async function DashboardPage({ params }: PageProps) {
   const { userId } = await params;
   
-  // 1. Auth Guard
   const session = await getServerSession(authOptions);
   if (!session) redirect("/sign-in");
 
-  // 2. Direct Database Fetching (Replaces the broken fetch logic)
   let data;
   try {
     await dbConnect();
 
-    // Fetch all required data in parallel for maximum speed
+    // Fetch primary data
     const [user, allOrders, reviews, messages] = await Promise.all([
       UserModel.findById(userId).select("-password").lean(),
       OrderModel.find({ userId }).sort({ createdAt: -1 }).lean(),
@@ -42,28 +44,33 @@ export default async function DashboardPage({ params }: PageProps) {
 
     if (!user) return notFound();
 
-    // Serialize data for the client (removes MongoDB ObjectIDs that cause hydration errors)
+    // STAFF SPECIFIC: Fetch active workload only if the user is staff
+    let activeTaskCount = 0;
+    if (user.role === "staff") {
+      activeTaskCount = await OrderModel.countDocuments({
+        assignedStaffId: userId,
+        deliveryStatus: { $in: ["assigned", "picked-up", "out-for-delivery"] }
+      });
+    }
+
     data = JSON.parse(JSON.stringify({
       user,
       allOrders,
       recentOrders: allOrders.slice(0, 5),
       reviews,
-      messages
+      messages,
+      activeTaskCount // Pass count to UI
     }));
 
   } catch (error) {
     console.error("Database Error:", error);
     return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-center p-6">
-        <div className="space-y-4">
-          <h2 className="text-[#EFA765] text-2xl font-bold">Database Error</h2>
-          <p className="text-slate-400">We encountered an issue connecting to the database. Please try again later.</p>
-        </div>
+         {/* Error UI remains same */}
       </div>
     );
   }
 
-  // 3. Render UI (Remains largely the same, but now 100% reliable)
   return (
     <div className="min-h-screen bg-[#0F172A] text-slate-200 font-sans">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -72,6 +79,38 @@ export default async function DashboardPage({ params }: PageProps) {
       </div>
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+        
+        {/* --- STAFF SWITCHER BANNER --- */}
+        {data.user.role === 'staff' && (
+          <section className="animate-in fade-in zoom-in duration-500">
+            <div className="relative group overflow-hidden rounded-[2rem] bg-gradient-to-r from-[#EFA765] to-[#f39c12] p-[1px]">
+              <div className="bg-[#0F172A]/90 backdrop-blur-xl rounded-[calc(2rem-1px)] p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className="bg-[#EFA765]/20 p-4 rounded-2xl border border-[#EFA765]/30">
+                    <Truck className="text-[#EFA765] w-8 h-8" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black uppercase tracking-tight italic">
+                      Staff <span className="text-[#EFA765]">Work Mode</span>
+                    </h2>
+                    <p className="text-slate-400 text-sm">
+                      You have <span className="text-white font-bold">{data.activeTaskCount}</span> pending deliveries assigned to you.
+                    </p>
+                  </div>
+                </div>
+                
+                <Link href={`/user-dashboard/${userId}/staff-console`} className="w-full sm:w-auto">
+                  <Button className="w-full sm:w-auto bg-[#EFA765] hover:bg-[#EFA765]/90 text-[#0F172A] font-black uppercase tracking-widest px-8 h-14 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#EFA765]/20">
+                    Switch to Console
+                    <ChevronRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+        {/* ------------------------------ */}
+
         <section className="animate-in fade-in slide-in-from-top-4 duration-700">
           <UserProfile user={data.user} />
         </section>
@@ -87,11 +126,11 @@ export default async function DashboardPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 space-y-8">
             <div className="rounded-[2.5rem] bg-[#1E293B]/40 backdrop-blur-xl border border-white/5 shadow-2xl overflow-hidden">
-               <UserOrders recentOrders={data.recentOrders} />
+                <UserOrders recentOrders={data.recentOrders} />
             </div>
             
             <div className="rounded-[2.5rem] bg-[#1E293B]/40 backdrop-blur-xl border border-white/5 shadow-2xl overflow-hidden">
-               <PastOrdersTable allOrders={data.allOrders} />
+                <PastOrdersTable allOrders={data.allOrders} />
             </div>
           </div>
 
