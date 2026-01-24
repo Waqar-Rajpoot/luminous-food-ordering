@@ -127,7 +127,6 @@ export default function ProductsPage() {
       </div>
 
       {/* --- STICKY FILTERS --- */}
-      {/* MOBILE FIX: Adjusted 'top' value to match your mobile header height (usually 64px-76px) */}
       <div className="sticky top-[64px] md:top-[70px] z-30 bg-[#141F2D]/90 backdrop-blur-xl border-b border-white/5 py-4 md:py-6">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
           <div className="relative w-full md:max-w-md">

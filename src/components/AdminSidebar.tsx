@@ -86,8 +86,8 @@ export default function AdminNavbar() {
             onClick={handleLogout}
             className="hidden xl:flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors text-[10px] font-black uppercase tracking-widest"
           >
-            <LogOut size={14} />
             <span className="hidden xxl:block">Sign Out</span>
+            <LogOut size={20} />
           </button>
 
           {/* Mobile Toggle */}

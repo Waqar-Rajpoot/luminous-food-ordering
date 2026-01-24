@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
 import { Loader2, Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 
@@ -25,7 +25,7 @@ import { signInSchema } from "@/schemas/signInSchema";
 const Signin = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // const router = useRouter();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -55,12 +55,12 @@ const Signin = () => {
       const session = await getSession();
       const userId = session?.user?._id;
       
-     if (session?.user?.role === "admin") {
+    if (session?.user?.role === "admin") {
     toast.success("Welcome, Admin");
-    window.location.href = "/admin"; 
+    router.push("/admin");
   } else {
     toast.success("Login Successful");
-    window.location.href = `/user-dashboard/${userId}`;
+    router.push(`/user-dashboard/${userId}`);
   }
     } catch (error) {
 
