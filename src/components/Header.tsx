@@ -109,7 +109,7 @@ export default function Header() {
                 >
                   {link.name}
                   <span
-                    className={`absolute -bottom-1 left-0 h-[2px] bg-[#EFA765] transition-all duration-300 ${
+                    className={`absolute -bottom-1 left-0 h-0.5 bg-[#EFA765] transition-all duration-300 ${
                       isActive ? "w-full" : "w-0 group-hover:w-full"
                     }`}
                   />
@@ -183,11 +183,11 @@ export default function Header() {
               ) : (
                 <Button
                   asChild
-                  className="h-11 px-6 rounded-xl bg-[#EFA765] text-[#141F2D] font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all duration-500 shadow-lg shadow-[#EFA765]/10"
+                  className="h-8 border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-[#EFA765] hover:border-[#EFA765]/30 text-[10px] rounded font-black uppercase tracking-widest transition-all duration-500"
                 >
                   <Link href="/sign-in">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Secure Access
+                    <LogIn className="h-4 w-4" />
+                    Sign In
                   </Link>
                 </Button>
               )}
@@ -208,7 +208,7 @@ export default function Header() {
                 
                 <SheetContent
                   side="right"
-                  className="bg-[#141F2D] border-white/5 text-white w-[60vw] max-w-[300px] pl-8 pt-8 pr-8 overflow-y-auto"
+                  className="bg-[#141F2D] border-white/5 text-white w-[60vw] max-w-75 pl-8 pt-8 pr-8 overflow-y-auto"
                 >
                   <div className="flex flex-col h-full">
                     <SheetHeader className="text-left border-b border-white/5 pb-6">
@@ -267,10 +267,13 @@ export default function Header() {
                         ) : (
                           <Button
                             asChild
-                            className="w-full bg-[#EFA765] text-[#141F2D] rounded-xl h-12 font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all duration-300 shadow-xl shadow-[#EFA765]/10"
+                            className="h-8 w-24 border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-[#EFA765] hover:border-[#EFA765]/30 text-[10px] rounded font-black uppercase tracking-widest transition-all duration-500"
                             onClick={() => setIsMenuOpen(false)}
                           >
-                            <Link href="/sign-in">Secure Sign In</Link>
+                            <Link href="/sign-in">
+                            <LogIn className="h-4 w-4 mr-1" />
+                            Sign In
+                            </Link>
                           </Button>
                         )}
                       </div>
@@ -282,7 +285,7 @@ export default function Header() {
           </div>
         </nav>
       </header>
-      <div className="h-[76px] md:h-[84px]" />
+      <div className="h-19 md:h-21" />
     </>
   );
 }

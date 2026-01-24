@@ -162,7 +162,7 @@ const Signin = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-16 rounded-2xl bg-[#EFA765] text-[#141F2D] font-black uppercase tracking-[0.2em] hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#EFA765]/10"
+                className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all hover:bg-[#EFA765] bg-[#EFA765]/90 text-[#141F2D] text-[12px] flex items-center justify-center gap-2 shadow-lg shadow-[#EFA765]/20"
               >
                 {isSubmitting ? (
                   <Loader2 className="animate-spin" />

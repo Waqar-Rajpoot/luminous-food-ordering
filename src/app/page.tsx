@@ -88,11 +88,11 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 md:gap-10">
                 <button
                   onClick={() => router.push("/products")}
-                  className="w-full sm:w-auto bg-[#efa765] text-[#141f2d] px-8 md:px-12 py-5 md:py-6 rounded-2xl font-black uppercase text-xs md:text-sm hover:translate-y-[-4px] transition-all flex items-center justify-center gap-4 shadow-lg"
+                  className="w-full sm:w-auto bg-[#efa765] text-[#141f2d] px-8 md:px-12 py-5 md:py-6 rounded-2xl font-black uppercase text-xs md:text-sm hover:translate-y-1 transition-all flex items-center justify-center gap-4 shadow-lg"
                 >
                   Explore Creations <ArrowRight size={18} />
                 </button>
-                <div className="hidden md:block h-12 w-[1px] bg-white/10" />
+                <div className="hidden md:block h-12 w-px bg-white/10" />
                 <div className="flex flex-col">
                     <p className="text-[10px] uppercase tracking-widest text-white/40 mb-1 font-bold">Open Daily</p>
                     <p className="text-sm font-bold italic uppercase">12:00 PM - 02:00 AM</p>
@@ -115,14 +115,14 @@ export default function HomePage() {
                   <h3 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase">Signature Deals.</h3>
                </div>
             </div>
-            <p className="text-white/40 text-xs md:text-sm max-w-[200px] font-medium uppercase tracking-tighter md:text-right">
+            <p className="text-white/40 text-xs md:text-sm max-w-50 font-medium uppercase tracking-tighter md:text-right">
               Curated bundles for the ultimate dining experience.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {data?.activeDeals.map((deal: any) => (
-              <div key={deal._id} className="group relative bg-[#1a293a] rounded-[2.5rem] md:rounded-[3rem] overflow-hidden border border-white/5 flex flex-col h-[440px] md:h-[480px]">
+              <div key={deal._id} className="group relative bg-[#1a293a] rounded-[2.5rem] md:rounded-[3rem] overflow-hidden border border-white/5 flex flex-col h-110 md:h-120">
                 <div className="relative h-3/5 md:h-2/3 overflow-hidden">
                   {isValid(deal.image) && (
                     <Image 
@@ -133,7 +133,7 @@ export default function HomePage() {
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1a293a] via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-[#1a293a] via-transparent to-transparent" />
                   <div className="absolute top-4 right-4 md:top-6 md:right-6">
                     <div className="bg-[#efa765] text-[#141f2d] text-[9px] md:text-[10px] font-black px-3 py-1.5 md:px-4 md:py-2 rounded-full uppercase shadow-2xl">
                        Save Rs. {deal.savings || (deal.originalPrice - deal.dealPrice)}
@@ -141,7 +141,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="p-6 md:p-8 pt-2 flex flex-col flex-grow justify-between">
+                <div className="p-6 md:p-8 pt-2 flex flex-col grow justify-between">
                   <div>
                     <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter mb-2 md:mb-3">{deal.title}</h4>
                     <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
@@ -160,7 +160,7 @@ export default function HomePage() {
                     </div>
                     <button 
                       onClick={() => handleAddToCart(deal, true)}
-                      className="bg-white text-[#141f2d] h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center hover:bg-[#efa765] transition-all transform group-hover:rotate-[360deg] duration-500 shadow-xl"
+                      className="bg-white text-[#141f2d] h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center hover:bg-[#efa765] transition-all transform group-hover:rotate-360 duration-500 shadow-xl"
                     >
                       <ShoppingCart size={18} />
                     </button>
@@ -186,7 +186,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-16 md:gap-y-24 gap-x-8 md:gap-x-12">
             {data?.bestSellers.map((prod: any) => (
               <div key={prod._id} className="group">
-                <div className="relative aspect-[4/5] rounded-[2.5rem] md:rounded-[4rem] overflow-hidden mb-6 md:mb-8 bg-[#1a293a] border border-white/5 shadow-2xl transition-all duration-500 group-hover:rounded-[1.5rem] md:group-hover:rounded-[2rem]">
+                <div className="relative aspect-4/5 rounded-[2.5rem] md:rounded-[4rem] overflow-hidden mb-6 md:mb-8 bg-[#1a293a] border border-white/5 shadow-2xl transition-all duration-500 group-hover:rounded-3xl md:group-hover:rounded-4xl">
                   {isValid(prod.imageSrc) && (
                     <Image 
                       src={prod.imageSrc} 
