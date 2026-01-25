@@ -54,7 +54,7 @@ export default function Header() {
   const handleSignOut = () => {
     handlePageNavigation();
     setIsMenuOpen(false);
-    signOut({ callbackUrl: "/" });
+    signOut({ callbackUrl: "/sign-in" });
   };
 
   const baseNavLinks = [
@@ -74,16 +74,15 @@ export default function Header() {
       return { href: "/admin", text: "Admin Panel", icon: <ShieldCheck className="h-4 w-4" /> };
     }
 
-    if (role === "staff") {
-      // Matches your path: app/user-dashboard/[userId]/staff-console/page.tsx
-      return { 
-        href: `/user-dashboard/${userId}`, 
-        text: "My Dashboard", 
-        icon: <LayoutDashboard className="h-4 w-4" /> 
-      };
-    }
+    // if (role === "staff") {
+    //   return { 
+    //     href: `/user-dashboard/${userId}`, 
+    //     text: "My Dashboard", 
+    //     icon: <LayoutDashboard className="h-4 w-4" /> 
+    //   };
+    // }
 
-    if (role === "user") {
+    if (role === "user" || role === "staff") {
       return { 
         href: `/user-dashboard/${userId}`, 
         text: "My Dashboard", 
@@ -203,7 +202,7 @@ export default function Header() {
               ) : (
                 <Button
                   asChild
-                  className="h-8 border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-[#EFA765] hover:border-[#EFA765]/30 text-[10px] rounded font-black uppercase tracking-widest transition-all duration-500"
+                  className="h-12 px-4 border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-[#EFA765] hover:border-[#EFA765]/30 text-[10px] rounded-xl font-black uppercase tracking-widest transition-all duration-500"
                 >
                   <Link href="/sign-in">
                     <LogIn className="h-4 w-4 mr-2" />

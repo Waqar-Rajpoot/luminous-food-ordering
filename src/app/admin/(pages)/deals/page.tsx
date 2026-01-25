@@ -1,13 +1,14 @@
 "use client";
 
+import { useState } from "react"; // Added useState
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { dealSchema, type DealFormValues } from "@/schemas/hotDealFormSchema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Save, Loader2, Calendar } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Trash2, Save, Loader2, Calendar, X } from "lucide-react"; // Added X
 import axios from "axios";
 import { toast } from "sonner";
 import FileUpload from "@/components/MediaUploader";
@@ -28,6 +29,9 @@ const defaultFormValues: DealFormValues = {
 };
 
 export default function CreateDealPage() {
+  // 1. State to track if we are editing
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const {
     register,
     control,
@@ -48,12 +52,41 @@ export default function CreateDealPage() {
   const today = new Date().toISOString().split("T")[0];
   const selectedStartDate = watch("startDate");
 
+  // 2. Handle Edit Trigger from DealsList
+  const handleEdit = (deal: any) => {
+    setEditingId(deal._id);
+    
+    // Normalize dates for HTML input (YYYY-MM-DD)
+    const start = deal.startDate?.$date || deal.startDate;
+    const end = deal.endDate?.$date || deal.endDate;
+
+    reset({
+      ...deal,
+      startDate: start ? new Date(start).toISOString().split('T')[0] : "",
+      endDate: end ? new Date(end).toISOString().split('T')[0] : "",
+      items: deal.items.map((i: any) => ({ name: i.name, quantity: i.quantity }))
+    });
+  };
+
+  // 3. Reset form and exit edit mode
+  const cancelEdit = () => {
+    setEditingId(null);
+    reset(defaultFormValues);
+  };
+
   const onSubmit = async (data: DealFormValues) => {
     try {
-      const response = await axios.post("/api/deals", data);
+      const response = editingId 
+        ? await axios.patch(`/api/deals/${editingId}`, data) // UPDATE
+        : await axios.post("/api/deals", data);               // CREATE
+
       if (response.data.success) {
-        toast.success("Deal published successfully!");
+        toast.success(editingId ? "Deal updated successfully!" : "Deal published successfully!");
         reset(defaultFormValues);
+        setEditingId(null);
+        // Tip: You might want to trigger a refresh in the DealsList here 
+        // if it doesn't auto-update via a shared state or SWR/React Query.
+        window.location.reload(); 
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Something went wrong");
@@ -61,17 +94,31 @@ export default function CreateDealPage() {
   };
 
   return (
-    // overflow-x-hidden on the parent is vital to stop horizontal scroll
-    <div className="min-h-screen bg-[#141F2D] text-[#EFA765] overflow-x-hidden">
+    <div className="min-h-screen bg-[#141F2D] text-[#EFA765] overflow-x-hidden flex flex-col justify-center items-center">
       
-      <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 pt-24 space-y-10">
+      <div className="max-w-4xl mx-auto md:mx-0 px-4 py-8 sm:px-2 lg:px-8 pt-24 space-y-10">
         
-        {/* Header Section - Simplified for Mobile */}
-        <div className="flex flex-col gap-2 border-b border-white/5 pb-6">
-          <h1 className="text-2xl sm:text-3xl font-black flex items-center gap-3 uppercase tracking-tighter">
-            <Save className="h-7 w-7 sm:h-8 sm:w-8" /> Create New Deal
-          </h1>
-          <p className="text-gray-500 text-xs sm:text-sm font-medium">Design and publish elite bistro offers</p>
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/5 pb-6 gap-4">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl sm:text-3xl font-black flex items-center gap-3 uppercase tracking-tighter">
+              <Save className="h-7 w-7 sm:h-8 sm:w-8" /> 
+              {editingId ? "Update Deal" : "Create New Deal"}
+            </h1>
+            <p className="text-gray-500 text-xs sm:text-sm font-medium">
+              {editingId ? `Modifying: ${editingId}` : "Design and publish elite bistro offers"}
+            </p>
+          </div>
+
+          {editingId && (
+            <Button 
+              onClick={cancelEdit} 
+              variant="outline" 
+              className="border-red-500/50 text-red-500 hover:bg-red-500/10"
+            >
+              <X className="mr-2 h-4 w-4" /> Cancel Editing
+            </Button>
+          )}
         </div>
 
         <Card className="bg-[#1D2B3F] border-[#EFA765]/20 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
@@ -118,7 +165,7 @@ export default function CreateDealPage() {
                 </div>
               </div>
 
-              {/* Validity Dates - Responsive Grid */}
+              {/* Validity Dates */}
               <div className="space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-400 flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-[#EFA765]" /> Validity Period
@@ -130,7 +177,7 @@ export default function CreateDealPage() {
                       type="date" 
                       {...register("startDate")} 
                       min={today} 
-                      className="bg-[#141F2D] border-white/10 text-white h-11" 
+                      className="bg-[#141F2D] border-white/10 text-white h-11 [color-scheme:dark]" 
                     />
                   </div>
                   <div className="space-y-2">
@@ -139,13 +186,13 @@ export default function CreateDealPage() {
                       type="date" 
                       {...register("endDate")} 
                       min={selectedStartDate || today} 
-                      className="bg-[#141F2D] border-white/10 text-white h-11" 
+                      className="bg-[#141F2D] border-white/10 text-white h-11 [color-scheme:dark]" 
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Pricing Logic - Responsive Grid */}
+              {/* Pricing Logic */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-[#EFA765]/5 border border-[#EFA765]/10">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase text-white/30">Original Price (PKR)</label>
@@ -165,18 +212,17 @@ export default function CreateDealPage() {
                 </div>
               </div>
 
-              {/* Items Section - Responsive List */}
+              {/* Items Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b border-white/5 pb-2">
                   <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-400">Included Items</h3>
-                  <Button 
+                  <button 
                     type="button" 
-                    size="sm"
                     onClick={() => append({ name: "", quantity: 1 })}
-                    className="bg-transparent border border-[#EFA765] text-[#EFA765] hover:bg-[#EFA765] hover:text-[#141F2D] text-[10px] font-bold"
+                    className="flex items-center gap-1 border border-[#EFA765] text-[#EFA765] hover:bg-[#EFA765] hover:text-[#141F2D] px-3 py-1 rounded-md text-[10px] font-bold transition-all"
                   >
-                    <Plus className="mr-1 h-3 w-3" /> ADD
-                  </Button>
+                    <Plus className="h-3 w-3" /> ADD
+                  </button>
                 </div>
                 
                 <div className="space-y-3">
@@ -212,20 +258,25 @@ export default function CreateDealPage() {
                 </div>
               </div>
 
+              {/* Dynamic Submit Button */}
               <Button 
                 type="submit"
                 disabled={isSubmitting} 
                 className="w-full bg-[#EFA765] text-[#141F2D] hover:bg-white h-14 sm:h-16 rounded-xl sm:rounded-2xl text-lg font-black transition-all active:scale-95"
               >
-                {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : "PUBLISH HOT DEAL"}
+                {isSubmitting ? (
+                  <Loader2 className="animate-spin h-6 w-6" />
+                ) : (
+                  editingId ? "SAVE CHANGES" : "PUBLISH HOT DEAL"
+                )}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* List Section */}
+        {/* List Section - Passing the handleEdit prop */}
         <div className="w-full">
-           <DealsList />
+           <DealsList onEdit={handleEdit} />
         </div>
       </div>
     </div>
