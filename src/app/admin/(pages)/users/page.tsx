@@ -197,19 +197,17 @@ export default function AdminUsersPage() {
         <CardTitle className="text-[10px] font-medium text-gray-400 uppercase truncate pr-1">
           {title}
         </CardTitle>
-        <div className={`${iconColor} flex-shrink-0 scale-75`}>{icon}</div>
+        <div className={`${iconColor} shrink-0 scale-75`}>{icon}</div>
       </CardHeader>
       <CardContent className="p-3 pt-0 overflow-hidden">
         <div className="text-lg md:text-3xl font-bold text-[#efa765] truncate">{value}</div>
-        <p className="text-[9px] text-gray-500 mt-0.5 truncate">{description}</p>
+        <p className="text-[10px] text-gray-500 mt-0.5 truncate">{description}</p>
       </CardContent>
     </Card>
   );
 
   return (
-    /* FIXED: Using 'mx-auto' and explicit 'w-full' to prevent shifting. 
-       Also ensured no extra left padding is forced if not needed. */
-    <div className="flex-1 flex flex-col pt-3 md:pt-16 lg:pt-20 min-h-screen w-full max-w-[1400px] mx-auto overflow-x-hidden">
+    <div className="flex-1 flex flex-col pt-3 md:pt-16 lg:pt-20 min-h-screen w-full max-w-300 mx-auto overflow-x-hidden">
       
       {/* Title Section - Balanced padding */}
       <div className="mb-6 px-4 md:px-8">

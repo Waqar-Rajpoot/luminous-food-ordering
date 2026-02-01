@@ -64,7 +64,6 @@ export default function Header() {
     { name: "Products", href: "/products" },
   ];
 
-  // UPDATED: Logic to handle different folder structures based on role
   const getDashboardLink = () => {
     if (!session?.user) return null;
 
@@ -73,14 +72,6 @@ export default function Header() {
     if (role === "admin") {
       return { href: "/admin", text: "Admin Panel", icon: <ShieldCheck className="h-4 w-4" /> };
     }
-
-    // if (role === "staff") {
-    //   return { 
-    //     href: `/user-dashboard/${userId}`, 
-    //     text: "My Dashboard", 
-    //     icon: <LayoutDashboard className="h-4 w-4" /> 
-    //   };
-    // }
 
     if (role === "user" || role === "staff") {
       return { 

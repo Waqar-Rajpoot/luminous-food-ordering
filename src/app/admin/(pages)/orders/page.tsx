@@ -22,6 +22,7 @@ import {
   Trash2,
   RefreshCcw,
   DollarSign,
+  // CurrencyRupee,
   Package,
   Clock,
   CheckCircle,
@@ -29,6 +30,7 @@ import {
   ListOrdered,
   Truck,
   Zap,
+  CurrencyIcon,
 } from "lucide-react";
 
 interface OrderItem {
@@ -160,9 +162,9 @@ const OrderMetrics: React.FC<OrderMetricsProps> = ({ metrics }) => (
       description="All orders received."
     />
     <MetricCard
-      title="Total Revenue (USD)"
-      value={formatCurrency(metrics.totalRevenue, "USD")}
-      icon={<DollarSign />}
+      title="Total Revenue (PKR)"
+      value={formatCurrency(metrics.totalRevenue, "PKR")}
+      icon={<CurrencyIcon />}
       color="text-emerald-400"
       description={`${metrics.paidOrders} orders paid.`}
     />
