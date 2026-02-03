@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="fixed top-22 left-0 z-50">
         <AdminSheetNav />
       </div>
-      <main className="flex-1 p-8">
+      <main className="flex-1 pt-10">
         <Suspense fallback={
           <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
             <Loader2 className="animate-spin h-12 w-12 text-[#efa765]" />

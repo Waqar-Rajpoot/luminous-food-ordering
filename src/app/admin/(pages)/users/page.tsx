@@ -193,43 +193,47 @@ export default function AdminUsersPage() {
 
   const StatCard = ({ title, value, icon, iconColor, description }: any) => (
     <Card className="bg-[#1c2a3b] border-[#efa765]/30 shadow-md min-w-0">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
-        <CardTitle className="text-[10px] font-medium text-gray-400 uppercase truncate pr-1">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-1">
+        <CardTitle className="text-xs font-semibold text-gray-300 uppercase truncate pr-1">
           {title}
         </CardTitle>
-        <div className={`${iconColor} shrink-0 scale-75`}>{icon}</div>
+        <div className={`${iconColor} shrink-0`}>
+          {/* Increased icon size from scale-75 to scale-100 */}
+          {icon}
+        </div>
       </CardHeader>
-      <CardContent className="p-3 pt-0 overflow-hidden">
-        <div className="text-lg md:text-3xl font-bold text-[#efa765] truncate">{value}</div>
-        <p className="text-[10px] text-gray-500 mt-0.5 truncate">{description}</p>
+      <CardContent className="p-4 pt-0 overflow-hidden">
+        {/* Increased text size for the value */}
+        <div className="text-2xl md:text-4xl font-bold text-[#efa765] truncate">{value}</div>
+        <p className="text-[11px] text-gray-500 mt-1 truncate">{description}</p>
       </CardContent>
     </Card>
   );
 
   return (
-    <div className="flex-1 flex flex-col pt-3 md:pt-16 lg:pt-20 min-h-screen w-full max-w-300 mx-auto overflow-x-hidden">
+    <div className="flex-1 flex flex-col pt-3 px-4 md:px-8 md:pt-16 lg:pt-20 min-h-screen w-full max-w-7xl mx-auto overflow-x-hidden">
       
-      {/* Title Section - Balanced padding */}
-      <div className="mb-6 px-4 md:px-8">
-        <h1 className="yeseva-one text-2xl md:text-5xl font-bold mb-1 tracking-wide text-[#efa765]">
+      {/* Title Section */}
+      <div className="mb-6">
+        <h1 className="yeseva-one text-3xl md:text-5xl font-bold mb-1 tracking-wide text-[#efa765]">
           User Management
         </h1>
-        <p className="text-gray-400 text-xs md:text-base">
+        <p className="text-gray-400 text-sm md:text-base">
           Filter and manage user accounts efficiently.
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5 mb-6 px-4 md:px-8">
-        <StatCard title="Total" value={stats.total} icon={<Users className="h-4 w-4" />} iconColor="text-[#efa765]" description="Active" />
-        <StatCard title="Admins" value={stats.admin} icon={<Shield className="h-4 w-4" />} iconColor="text-red-500" description="High Access" />
-        <StatCard title="Managers" value={stats.manager} icon={<Briefcase className="h-4 w-4" />} iconColor="text-blue-400" description="Operations" />
-        <StatCard title="Staff" value={stats.staff} icon={<UserCheck className="h-4 w-4" />} iconColor="text-green-500" description="Standard" />
-        <StatCard title="Basic" value={stats.user} icon={<User className="h-4 w-4" />} iconColor="text-yellow-500" description="Customers" />
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5 mb-6">
+        <StatCard title="Total" value={stats.total} icon={<Users className="h-5 w-5" />} iconColor="text-[#efa765]" description="Active" />
+        <StatCard title="Admins" value={stats.admin} icon={<Shield className="h-5 w-5" />} iconColor="text-red-500" description="High Access" />
+        <StatCard title="Managers" value={stats.manager} icon={<Briefcase className="h-5 w-5" />} iconColor="text-blue-400" description="Operations" />
+        <StatCard title="Staff" value={stats.staff} icon={<UserCheck className="h-5 w-5" />} iconColor="text-green-500" description="Standard" />
+        <StatCard title="Basic" value={stats.user} icon={<User className="h-5 w-5" />} iconColor="text-yellow-500" description="Customers" />
       </div>
 
       {/* Search & Filters */}
-      <div className="mx-4 md:mx-8 flex flex-col gap-3 mb-6 p-3 md:p-4 rounded-lg bg-[#1c2a3b] border border-[#efa765]/20">
+      <div className="flex flex-col gap-3 mb-6 p-4 rounded-lg bg-[#1c2a3b] border border-[#efa765]/20">
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
@@ -248,8 +252,8 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Main Table/Card Container - Centered Alignment */}
-      <div className="md:mx-8 rounded-none md:rounded-xl border-y md:border border-[#efa765]/30 bg-[#141f2d]/30 text-white shadow-xl overflow-hidden">
+      {/* Main Table/Card Container */}
+      <div className="rounded-xl border border-[#efa765]/30 bg-[#141f2d]/30 text-white shadow-xl overflow-hidden">
         {isLoading ? (
           <div className="flex flex-col justify-center items-center py-16 text-[#efa765]">
             <Loader2 className="h-8 w-8 animate-spin mb-3" />
@@ -294,29 +298,29 @@ export default function AdminUsersPage() {
               </Table>
             </div>
 
-            {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-gray-800 w-full">
+            {/* Mobile Cards with matched border lines */}
+            <div className="md:hidden divide-y divide-[#efa765]/20 w-full">
               {users.map((user) => (
-                <div key={user._id} className="p-4 space-y-3 bg-[#141f2d]/50 w-full box-border">
+                <div key={user._id} className="p-4 space-y-3 bg-[#141f2d]/50 w-full box-border border-b border-[#efa765]/10 last:border-0">
                   <div className="flex justify-between items-start gap-2 w-full">
                     <div className="cursor-pointer overflow-hidden flex-1 min-w-0" onClick={() => handleRedirectToDashboard(user)}>
-                      <h3 className="font-bold text-[#efa765] text-base truncate">{user.name}</h3>
-                      <p className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5 truncate">
-                        <Mail className="h-3 w-3 flex-shrink-0"/> {user.email}
+                      <h3 className="font-bold text-[#efa765] text-lg truncate">{user.name}</h3>
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 truncate">
+                        <Mail className="h-3.5 w-3.5 flex-shrink-0"/> {user.email}
                       </p>
                     </div>
                     <DeleteAction user={user} isActionLoading={isActionLoading} handleDeleteUser={handleDeleteUser} />
                   </div>
-                  <div className="flex items-center justify-between text-[10px]">
-                    <Badge className={user.isVerified ? "bg-green-900/30 text-green-400" : "bg-red-900/30 text-red-400"}>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <Badge className={user.isVerified ? "bg-green-900/30 text-green-400 border border-green-500/20" : "bg-red-900/30 text-red-400 border border-red-500/20"}>
                       {user.isVerified ? "Verified" : "Unverified"}
                     </Badge>
-                    <div className="text-gray-500 flex items-center gap-1">
-                      <Calendar className="h-3 w-3"/> {format(new Date(user.createdAt), "dd MMM yyyy")}
+                    <div className="text-gray-500 flex items-center gap-1 font-medium">
+                      <Calendar className="h-3.5 w-3.5"/> {format(new Date(user.createdAt), "dd MMM yyyy")}
                     </div>
                   </div>
-                  <div className="bg-[#0d141b]/80 p-2 rounded-md flex items-center justify-between">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase">Role:</span>
+                  <div className="bg-[#0d141b]/80 p-3 rounded-lg flex items-center justify-between border border-[#efa765]/10">
+                    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Role:</span>
                     <RoleSelect user={user} isActionLoading={isActionLoading} handleUpdateRole={handleUpdateRole} roleBadgeClasses={roleBadgeClasses} />
                   </div>
                 </div>
@@ -327,16 +331,16 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex justify-between items-center mt-6 p-4 md:mx-8 md:rounded-lg bg-[#1c2a3b]/50 border-y md:border border-[#efa765]/20">
-        <div className="text-gray-400 text-[10px] md:text-xs">
-          Page {currentPage}/{totalPages} <span className="text-[#efa765] ml-1">{totalUsers} Users</span>
+      <div className="flex justify-between items-center mt-6 p-4 rounded-lg bg-[#1c2a3b]/50 border border-[#efa765]/20 mb-8">
+        <div className="text-gray-400 text-xs md:text-sm font-medium">
+          Page {currentPage}/{totalPages} <span className="text-[#efa765] ml-2">{totalUsers} Users</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1 || isLoading} variant="ghost" size="sm" className="text-[#efa765] border border-[#efa765]/10 h-8 w-8 p-0">
-            <ChevronLeft className="h-4 w-4" />
+        <div className="flex items-center gap-2">
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1 || isLoading} variant="ghost" size="sm" className="text-[#efa765] hover:bg-[#efa765]/10 border border-[#efa765]/20 h-9 w-9 p-0">
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages || isLoading} variant="ghost" size="sm" className="text-[#efa765] border border-[#efa765]/10 h-8 w-8 p-0">
-            <ChevronRight className="h-4 w-4" />
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages || isLoading} variant="ghost" size="sm" className="text-[#efa765] hover:bg-[#efa765]/10 border border-[#efa765]/20 h-9 w-9 p-0">
+            <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
       </div>
@@ -347,12 +351,12 @@ export default function AdminUsersPage() {
 // Sub-components logic...
 const RoleSelect = ({ user, isActionLoading, handleUpdateRole, roleBadgeClasses }: any) => (
   <Select value={user.role} onValueChange={(val: any) => handleUpdateRole(user._id, val)} disabled={isActionLoading === user._id}>
-    <SelectTrigger className={`w-[95px] md:w-[110px] h-7 md:h-8 text-[10px] font-bold capitalize border-none focus:ring-0 ${roleBadgeClasses(user.role)}`}>
+    <SelectTrigger className={`w-[105px] md:w-[110px] h-8 md:h-9 text-[11px] font-bold capitalize border-none focus:ring-0 ${roleBadgeClasses(user.role)} shadow-sm`}>
       <SelectValue />
     </SelectTrigger>
-    <SelectContent className="bg-gray-800 text-white border-gray-700">
+    <SelectContent className="bg-[#1c2a3b] text-white border-[#efa765]/30">
       {["admin", "manager", "staff", "user"].map(r => (
-        <SelectItem key={r} value={r} className="capitalize text-xs">{r}</SelectItem>
+        <SelectItem key={r} value={r} className="capitalize text-xs focus:bg-[#efa765] focus:text-black cursor-pointer">{r}</SelectItem>
       ))}
     </SelectContent>
   </Select>
@@ -361,8 +365,8 @@ const RoleSelect = ({ user, isActionLoading, handleUpdateRole, roleBadgeClasses 
 const DeleteAction = ({ user, isActionLoading, handleDeleteUser }: any) => (
   <AlertDialog>
     <AlertDialogTrigger asChild>
-      <Button variant="ghost" size="icon" disabled={isActionLoading === user._id} className="h-8 w-8 text-red-500 hover:bg-red-500/10">
-        {isActionLoading === user._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+      <Button variant="ghost" size="icon" disabled={isActionLoading === user._id} className="h-9 w-9 text-red-500 hover:bg-red-500/10 transition-colors">
+        {isActionLoading === user._id ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 className="h-5 w-5" />}
       </Button>
     </AlertDialogTrigger>
     <AlertDialogContent className="bg-gray-900 text-white border border-red-900/50 w-[90vw] max-w-sm rounded-xl">
@@ -373,8 +377,8 @@ const DeleteAction = ({ user, isActionLoading, handleDeleteUser }: any) => (
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter className="flex-row gap-2 mt-4">
-        <AlertDialogCancel className="flex-1 bg-gray-800 text-white border-none h-9">Cancel</AlertDialogCancel>
-        <AlertDialogAction onClick={() => handleDeleteUser(user._id)} className="flex-1 bg-red-600 hover:bg-red-700 h-9">Delete</AlertDialogAction>
+        <AlertDialogCancel className="flex-1 bg-gray-800 text-white border-none h-10 mt-0">Cancel</AlertDialogCancel>
+        <AlertDialogAction onClick={() => handleDeleteUser(user._id)} className="flex-1 bg-red-600 hover:bg-red-700 h-10">Delete</AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

@@ -21,8 +21,6 @@ import {
 import {
   Trash2,
   RefreshCcw,
-  DollarSign,
-  // CurrencyRupee,
   Package,
   Clock,
   CheckCircle,
@@ -460,52 +458,80 @@ const OrderTable: React.FC<OrderTableProps> = ({
   handleUpdateShippingProgress,
   handleUpdateStatus,
 }) => (
-  <div className="overflow-x-auto max-h-[500px] overflow-y-auto rounded-xl border border-[#EFA765]/20">
-    <Table>
-      <TableHeader>
-        <TableRow className="bg-[#1D2B3F] hover:bg-[#1D2B3F] border-b border-[#EFA765]/30 sticky top-0 z-10 shadow-md">
-          <TableHead className="text-[#EFA765] text-xs md:text-sm whitespace-nowrap">
-            Order ID
-          </TableHead>
-          <TableHead className="text-[#EFA765] text-xs md:text-sm whitespace-nowrap">
-            Date
-          </TableHead>
-          <TableHead className="text-[#EFA765] text-xs md:text-sm whitespace-nowrap">
-            Customer
-          </TableHead>
-          <TableHead className="text-[#EFA765] text-xs md:text-sm whitespace-nowrap">
-            Amount
-          </TableHead>
-          <TableHead className="text-[#EFA765] text-xs md:text-sm min-w-[150px] whitespace-nowrap">
-            Items
-          </TableHead>
-          <TableHead className="text-[#EFA765] text-xs md:text-sm w-[150px] whitespace-nowrap">
-            Shipping
-          </TableHead>
-          <TableHead className="text-[#EFA765] text-xs md:text-sm w-[120px] whitespace-nowrap">
-            Payment
-          </TableHead>
-          <TableHead className="text-[#EFA765] text-right text-xs md:text-sm whitespace-nowrap">
-            Actions
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {orders.map((order) => (
-          <OrderTableRow
-            key={order._id}
-            order={order}
-            handleRowClick={handleRowClick}
-            handleDeleteClick={handleDeleteClick}
-            handleUpdateShippingProgress={handleUpdateShippingProgress}
-            handleUpdateStatus={handleUpdateStatus}
-          />
-        ))}
-      </TableBody>
-    </Table>
+  <div className="rounded-xl border border-[#EFA765]/20">
+    {/* DESKTOP TABLE VIEW */}
+    <div className="hidden md:block overflow-x-auto max-h-125 overflow-y-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-[#1D2B3F] hover:bg-[#1D2B3F] border-b border-[#EFA765]/30 sticky top-0 z-10 shadow-md">
+            <TableHead className="text-[#EFA765]">Order ID</TableHead>
+            <TableHead className="text-[#EFA765]">Date</TableHead>
+            <TableHead className="text-[#EFA765]">Customer</TableHead>
+            <TableHead className="text-[#EFA765]">Amount</TableHead>
+            <TableHead className="text-[#EFA765]">Items</TableHead>
+            <TableHead className="text-[#EFA765]">Shipping</TableHead>
+            <TableHead className="text-[#EFA765]">Payment</TableHead>
+            <TableHead className="text-[#EFA765] text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {orders.map((order) => (
+            <OrderTableRow
+              key={order._id}
+              order={order}
+              handleRowClick={handleRowClick}
+              handleDeleteClick={handleDeleteClick}
+              handleUpdateShippingProgress={handleUpdateShippingProgress}
+              handleUpdateStatus={handleUpdateStatus}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+
+    {/* MOBILE CARD VIEW */}
+    <div className="md:hidden flex flex-col gap-4 p-4 bg-[#141F2D]">
+      {orders.map((order) => (
+        <Card key={order._id} className="bg-[#1D2B3F] border border-[#EFA765]/30 p-4 rounded-2xl">
+          <div className="flex justify-between items-start">
+            <div onClick={() => handleRowClick(order.orderId)} className="cursor-pointer">
+              <p className="text-[#EFA765] font-mono text-xs">{(order.orderId || order._id).substring(0, 18)}</p>
+              <p className="text-white text-[12px] font-bold">{order.customerEmail.substring(0, 15)}...</p>
+            </div>
+            <Button
+              onClick={(e) => handleDeleteClick(e, order)}
+              variant="ghost" size="icon" className="text-red-500 h-8 w-8"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="flex justify-between mb-2 ">
+            <div>
+              <p className="text-white/50 text-[10px] uppercase">Amount</p>
+              <p className="text-[#3dd878] font-bold text-[12px]">{formatCurrency(order.totalAmount, order.currency)}</p>
+            </div>
+            <div>
+              <p className="text-white/50 text-[10px] uppercase">Date</p>
+              <p className="text-white/80 text-xs">{new Date(order.createdAt).toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <p className="text-white/50 text-[10px] uppercase mb-1">Shipping</p>
+              <ShippingProgressSelect order={order} onUpdate={handleUpdateShippingProgress} />
+            </div>
+            <div>
+              <p className="text-white/50 text-[10px] uppercase mb-1">Payment</p>
+              <PaymentStatusSelect order={order} onUpdate={handleUpdateStatus} />
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
   </div>
 );
-
 interface ConfirmDeleteModalProps {
   orderToDelete: Order | null;
   handleDeleteOrder: () => Promise<void>;
@@ -576,7 +602,8 @@ const ManagementHeader: React.FC<ManagementHeaderProps> = ({ fetchOrders }) => (
 const OrderPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [, setShowConfirmModal] = useState(false);
+  // const [, setShowConfirmModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   // Removed [recentSearchTerm, setRecentSearchTerm] state
@@ -798,6 +825,8 @@ const OrderPage = () => {
     } catch (error) {
       console.error(error);
       setOrders(originalOrders); // Rollback
+      setShowConfirmModal(false);
+      setOrderToDelete(null);
     }
   };
 
@@ -899,7 +928,10 @@ const OrderPage = () => {
       <ConfirmDeleteModal
         orderToDelete={orderToDelete}
         handleDeleteOrder={handleDeleteOrder}
-        setShowConfirmModal={setShowConfirmModal}
+        setShowConfirmModal={() => {
+        setShowConfirmModal(false);
+        setOrderToDelete(null);
+      }}
       />
     </>
   );

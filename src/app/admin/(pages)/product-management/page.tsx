@@ -5,12 +5,24 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Loader2, PlusCircle, Edit, Trash2, MoreHorizontal,ChevronDown, ChevronUp, Package, Tag, CheckCircle,DollarSign,
+import {
+  Loader2,
+  PlusCircle,
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  ChevronDown,
+  ChevronUp,
+  Package,
+  Tag,
+  CheckCircle,
+  DollarSign,
 } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { ICategory } from "@/models/Category.model";
+import { Card, CardContent } from "@/components/ui/card";
 
 import {
   Form,
@@ -88,7 +100,7 @@ interface MenuStats {
 
 const calculateMenuStats = (
   products: Product[],
-  categories: ICategory[]
+  categories: ICategory[],
 ): MenuStats => {
   const totalProducts = products.length;
   const totalCategories = categories.length;
@@ -142,7 +154,7 @@ export default function CreateMenuPage() {
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<ICategory | null>(
-    null
+    null,
   );
   // 👈 2. Declare the missing state variable
 
@@ -150,17 +162,17 @@ export default function CreateMenuPage() {
   const [showProductDeleteConfirm, setShowProductDeleteConfirm] =
     useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(
-    null
+    null,
   );
   const [productToDeleteName, setProductToDeleteName] = useState<string | null>(
-    null
+    null,
   );
 
   // State for Category Deletion Confirmation Dialog
   const [showCategoryDeleteConfirm, setShowCategoryDeleteConfirm] =
     useState(false);
   const [categoryToDeleteId, setCategoryToDeleteId] = useState<string | null>(
-    null
+    null,
   );
   const [categoryToDeleteName, setCategoryToDeleteName] = useState<
     string | null
@@ -173,7 +185,7 @@ export default function CreateMenuPage() {
   // Calculate stats dynamically
   const menuStats = useMemo(
     () => calculateMenuStats(products, categories),
-    [products, categories]
+    [products, categories],
   );
 
   // React Hook Form for Product Management
@@ -248,12 +260,10 @@ export default function CreateMenuPage() {
 
   const handleEditProductClick = (product: Product) => {
     setEditingProduct(product);
-    // Resetting with only the required fields from the product object
     productForm.reset({
       name: product.name,
       price: product.price,
       category: product.category,
-      // Removed product.description
       imageSrc: product.imageSrc,
       isAvailable: product.isAvailable,
     });
@@ -302,7 +312,6 @@ export default function CreateMenuPage() {
   };
 
   const onProductFormSubmit = async (data: any) => {
-    // Use 'any' to accommodate the form structure without description
     const method = editingProduct ? "PUT" : "POST";
     const url = editingProduct
       ? `/api/products/${editingProduct._id}`
@@ -326,19 +335,19 @@ export default function CreateMenuPage() {
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-            `Failed to ${editingProduct ? "update" : "add"} product.`
+            `Failed to ${editingProduct ? "update" : "add"} product.`,
         );
       }
 
       toast.success(
-        `Product ${editingProduct ? "updated" : "added"} successfully!`
+        `Product ${editingProduct ? "updated" : "added"} successfully!`,
       );
       setIsProductDialogOpen(false);
       fetchProducts();
     } catch (error: any) {
       toast.error(
         error.message ||
-          `Failed to ${editingProduct ? "update" : "add"} product.`
+          `Failed to ${editingProduct ? "update" : "add"} product.`,
       );
       console.error("Product form submission error:", error);
     }
@@ -398,12 +407,12 @@ export default function CreateMenuPage() {
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-            `Failed to ${editingCategory ? "update" : "add"} category.`
+            `Failed to ${editingCategory ? "update" : "add"} category.`,
         );
       }
 
       toast.success(
-        `Category ${editingCategory ? "updated" : "added"} successfully!`
+        `Category ${editingCategory ? "updated" : "added"} successfully!`,
       );
       setIsCategoryDialogOpen(false);
       categoryForm.reset();
@@ -411,7 +420,7 @@ export default function CreateMenuPage() {
     } catch (error: any) {
       toast.error(
         error.message ||
-          `Failed to ${editingCategory ? "update" : "add"} category.`
+          `Failed to ${editingCategory ? "update" : "add"} category.`,
       );
       console.error("Category form submission error:", error);
     }
@@ -429,22 +438,19 @@ export default function CreateMenuPage() {
 
   if (status === "unauthenticated" || session?.user?.role !== "admin") {
     redirect("/sign-in");
-    return null;
   }
-
-  // --- RENDERED UI ---
   return (
-    <div className="min-h-screen bg-[#141f2d] p-4 sm:pt-25 text-white pt-20">
-      <h1 className="yeseva-one text-[rgb(239,167,101)] text-5xl md:text-6xl font-bold text-center mb-12 drop-shadow-lg tracking-wider">
-        📦 Product Command Center
+    <div className="min-h-screen bg-[#141f2d] p-4 sm:p-8 text-white pt-20 sm:pt-28">
+      <h1 className="yeseva-one text-[rgb(239,167,101)] text-4xl md:text-6xl font-bold text-center mb-8 md:mb-12 drop-shadow-lg tracking-wider">
+        Product Command Center
       </h1>
 
       {/* --- STATS OVERVIEW --- */}
       <section className="mb-12">
-        <h2 className="yeseva-one text-4xl font-bold text-white mb-6">
+        <h2 className="yeseva-one text-3xl md:text-4xl font-bold text-white mb-6">
           Stats Overview
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <StatCard
             icon={<Package className="h-8 w-8" />}
             title="Total Products"
@@ -457,29 +463,29 @@ export default function CreateMenuPage() {
             title="Total Categories"
             value={menuStats.totalCategories}
             colorClass="text-blue-400"
-            description="Sections to organize your menu"
+            description="Sections to organize"
           />
           <StatCard
             icon={<CheckCircle className="h-8 w-8" />}
             title="Available Products"
             value={menuStats.availableProducts}
             colorClass="text-[#3dd878]"
-            description="Currently visible to customers"
+            description="Currently visible"
           />
           <StatCard
             icon={<DollarSign className="h-8 w-8" />}
             title="Average Price"
             value={`PKR ${menuStats.averagePrice}`}
             colorClass="text-red-400"
-            description="Mean price across all products"
+            description="Mean price across items"
           />
         </div>
       </section>
 
       <hr className="border-gray-700 my-8" />
 
-      {/* --- PRODUCTS SECTION (500px Scrollable) --- */}
-      <section className="bg-gray-800/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-[#efa765]/50 mb-8">
+      {/* --- PRODUCTS SECTION --- */}
+      <section className="bg-gray-800/80 backdrop-blur-md p-4 sm:p-8 rounded-2xl border border-[#efa765]/50 mb-8">
         <Collapsible
           open={isProductsOpen}
           onOpenChange={setIsProductsOpen}
@@ -487,7 +493,7 @@ export default function CreateMenuPage() {
         >
           <CollapsibleTrigger asChild>
             <div className="flex justify-between items-center mb-6 cursor-pointer border-b border-gray-700 pb-4">
-              <h2 className="yeseva-one text-[rgb(239,167,101)] text-3xl font-bold flex items-center">
+              <h2 className="yeseva-one text-[rgb(239,167,101)] text-2xl md:text-3xl font-bold flex items-center">
                 <Package className="h-6 w-6 mr-3" /> Product List
               </h2>
               <Button
@@ -503,131 +509,204 @@ export default function CreateMenuPage() {
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="flex justify-end items-center mb-6 space-x-4">
+            <div className="flex justify-end items-center mb-6">
               <Button
                 onClick={handleAddProductClick}
-                className="bg-[#efa765] text-[#141f2d] hover:bg-[#ffb779] font-semibold transition duration-200 shadow-md hover:cursor-pointer"
+                className="w-full sm:w-auto bg-[#efa765] text-[#141f2d] hover:bg-[#ffb779] font-semibold transition duration-200 shadow-md"
               >
                 <PlusCircle className="mr-2 h-5 w-5" /> Add New Product
               </Button>
             </div>
 
             {loadingProducts ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="animate-spin h-10 w-10 text-[#efa765]" />
-                <p className="ml-4 text-xl text-gray-400">
-                  Loading gourmet goodness...
-                </p>
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="animate-spin h-10 w-10 text-[#efa765] mb-4" />
+                <p className="text-gray-400">Loading gourmet goodness...</p>
               </div>
             ) : products.length === 0 ? (
               <p className="text-center text-gray-400 py-12 text-lg">
-                No products found. Time to add your first delicious item! 🚀
+                No products found. Time to add your first item! 🚀
               </p>
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-gray-700 max-h-[500px] overflow-y-auto">
-                <Table className="min-w-full">
-                  <TableHeader className="bg-gray-700/50 sticky top-0 z-10">
-                    <TableRow className="hover:bg-gray-700/50">
-                      <TableHead className="text-[#efa765] min-w-[70px]">
-                        Image
-                      </TableHead>
-                      <TableHead className="text-[#efa765] min-w-[150px]">
-                        Name
-                      </TableHead>
-                      <TableHead className="text-[#efa765] min-w-[100px]">
-                        Category
-                      </TableHead>
-                      <TableHead className="text-[#efa765] min-w-[100px]">
-                        Price (PKR)
-                      </TableHead>
-                      <TableHead className="text-[#efa765] min-w-[100px]">
-                        Availability
-                      </TableHead>
-                      <TableHead className="text-[#efa765] text-right min-w-[80px]">
-                        Actions
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((product) => (
-                      <TableRow
-                        key={product._id}
-                        className="border-gray-700 hover:bg-gray-700/70 transition-colors"
-                      >
-                        <TableCell>
-                          <Image
-                            src={product.imageSrc || "/placeholder-image.png"}
-                            alt={product.name}
-                            width={50}
-                            height={50}
-                            className="rounded-lg object-cover w-[50px] h-[50px] border border-gray-600"
-                            unoptimized
-                          />
-                        </TableCell>
-                        <TableCell className="font-semibold text-white">
-                          {product.name}
-                        </TableCell>
-                        <TableCell className="text-gray-300">
-                          <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-gray-600 text-[#efa765]">
+              <>
+                {/* Desktop Table View (Hidden on Mobile) */}
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-700 max-h-125 overflow-y-auto custom-scrollbar">
+                  <Table className="min-w-full">
+                    <TableHeader className="bg-gray-700/50 sticky top-0 z-10">
+                      <TableRow className="hover:bg-gray-700/50 border-gray-700">
+                        <TableHead className="text-[#efa765]">Image</TableHead>
+                        <TableHead className="text-[#efa765]">Name</TableHead>
+                        <TableHead className="text-[#efa765]">
+                          Category
+                        </TableHead>
+                        <TableHead className="text-[#efa765]">
+                          Price (PKR)
+                        </TableHead>
+                        <TableHead className="text-[#efa765]">Status</TableHead>
+                        <TableHead className="text-[#efa765] text-right">
+                          Actions
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {products.map((product) => (
+                        <TableRow
+                          key={product._id}
+                          className="border-gray-700 hover:bg-gray-700/70 transition-colors"
+                        >
+                          <TableCell>
+                            <Image
+                              src={product.imageSrc || "/placeholder-image.png"}
+                              alt={product.name}
+                              width={50}
+                              height={50}
+                              className="rounded-lg object-cover w-12.5 h-12.5 border border-gray-600"
+                              unoptimized
+                            />
+                          </TableCell>
+                          <TableCell className="font-semibold text-white">
+                            {product.name}
+                          </TableCell>
+                          <TableCell>
+                            <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-gray-600 text-[#efa765]">
+                              {product.category}
+                            </span>
+                          </TableCell>
+                          <TableCell className="font-mono text-[#3dd878] font-bold">
+                            {product.price.toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                checked={product.isAvailable}
+                                onCheckedChange={() =>
+                                  handleToggleProductAvailability(product)
+                                }
+                                className="data-[state=checked]:bg-[#3dd878] data-[state=unchecked]:bg-red-500"
+                              />
+                              <span
+                                className={
+                                  product.isAvailable
+                                    ? "text-[#3dd878] text-sm"
+                                    : "text-red-400 text-sm"
+                                }
+                              >
+                                {product.isAvailable ? "Live" : "Hidden"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-white hover:bg-gray-600"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="end"
+                                className="bg-gray-800 border-gray-700 text-white"
+                              >
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleEditProductClick(product)
+                                  }
+                                  className="cursor-pointer hover:bg-gray-700"
+                                >
+                                  <Edit className="mr-2 h-4 w-4 text-blue-400" />{" "}
+                                  Edit Product
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-gray-700" />
+                                <DropdownMenuItem
+                                  onClick={() => confirmDeleteProduct(product)}
+                                  className="text-red-500 cursor-pointer hover:bg-red-900"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                  Product
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View (Hidden on Desktop) */}
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                  {products.map((product) => (
+                    <Card
+                      key={product._id}
+                      className="bg-gray-700/40 border-gray-600 text-white overflow-hidden"
+                    >
+                      <CardContent className="p-4 flex items-center space-x-4">
+                        <Image
+                          src={product.imageSrc || "/placeholder-image.png"}
+                          alt={product.name}
+                          width={64}
+                          height={64}
+                          className="rounded-md object-cover w-16 h-16 border border-gray-500"
+                          unoptimized
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-lg truncate">
+                            {product.name}
+                          </h3>
+                          <p className="text-[#efa765] text-xs font-medium uppercase tracking-wider">
                             {product.category}
-                          </span>
-                        </TableCell>
-                        <TableCell className="font-mono text-[#3dd878] font-bold">
-                          {`PKR ${product.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-                        </TableCell>
-                        <TableCell>
-                          <Switch
-                            checked={product.isAvailable}
-                            onCheckedChange={() =>
-                              handleToggleProductAvailability(product)
-                            }
-                            className="data-[state=checked]:bg-[#3dd878] data-[state=unchecked]:bg-red-500"
-                          />
-                          <span
-                            className={`ml-2 text-sm font-medium ${product.isAvailable ? "text-[#3dd878]" : "text-red-400"}`}
-                          >
-                            {product.isAvailable ? "Live" : "Hidden"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
+                          </p>
+                          <p className="text-[#3dd878] font-mono font-bold">
+                            PKR {product.price.toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end justify-between h-16">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
-                                className="h-8 w-8 p-0 text-white hover:bg-gray-600"
+                                className="h-8 w-8 p-0 text-white"
                               >
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
+                                <MoreHorizontal className="h-5 w-5" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                               align="end"
                               className="bg-gray-800 border-gray-700 text-white"
                             >
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem
                                 onClick={() => handleEditProductClick(product)}
-                                className="text-gray-200 hover:bg-gray-700 cursor-pointer"
+                                className="cursor-pointer"
                               >
                                 <Edit className="mr-2 h-4 w-4 text-blue-400" />{" "}
-                                Edit Product
+                                Edit
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator className="bg-gray-700" />
                               <DropdownMenuItem
                                 onClick={() => confirmDeleteProduct(product)}
-                                className="text-red-500 hover:bg-red-900 hover:text-red-100 cursor-pointer"
+                                className="text-red-500 cursor-pointer"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                Product
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                          <Switch
+                            checked={product.isAvailable}
+                            onCheckedChange={() =>
+                              handleToggleProductAvailability(product)
+                            }
+                            className="data-[state=checked]:bg-[#3dd878]"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </CollapsibleContent>
         </Collapsible>
@@ -635,8 +714,8 @@ export default function CreateMenuPage() {
 
       <hr className="border-gray-700 my-8" />
 
-      {/* --- CATEGORIES SECTION (400px Scrollable) --- */}
-      <section className="bg-gray-800/80 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-[#efa765]/50">
+      {/* --- CATEGORIES SECTION --- */}
+      <section className="bg-gray-800/80 backdrop-blur-md p-4 sm:p-8 rounded-2xl border border-[#efa765]/50">
         <Collapsible
           open={isCategoriesOpen}
           onOpenChange={setIsCategoriesOpen}
@@ -644,7 +723,7 @@ export default function CreateMenuPage() {
         >
           <CollapsibleTrigger asChild>
             <div className="flex justify-between items-center mb-6 cursor-pointer border-b border-gray-700 pb-4">
-              <h2 className="yeseva-one text-[rgb(239,167,101)] text-3xl font-bold flex items-center">
+              <h2 className="yeseva-one text-[rgb(239,167,101)] text-2xl md:text-3xl font-bold flex items-center">
                 <Tag className="h-6 w-6 mr-3" /> Category Structure
               </h2>
               <Button
@@ -660,10 +739,10 @@ export default function CreateMenuPage() {
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="flex justify-end items-center mb-6">
+            <div className="flex justify-end mb-6">
               <Button
                 onClick={handleAddCategoryClick}
-                className="bg-[#efa765] text-[#141f2d] hover:bg-[#ffb779] font-semibold transition duration-200 shadow-md hover:shadow-lg"
+                className="w-full sm:w-auto bg-[#efa765] text-[#141f2d] hover:bg-[#ffb779] font-semibold"
               >
                 <PlusCircle className="mr-2 h-5 w-5" /> Add New Category
               </Button>
@@ -672,88 +751,56 @@ export default function CreateMenuPage() {
             {loadingCategories ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="animate-spin h-10 w-10 text-[#efa765]" />
-                <p className="ml-4 text-xl text-gray-400">
-                  Organizing categories...
-                </p>
               </div>
-            ) : categories.length === 0 ? (
-              <p className="text-center text-gray-400 py-12 text-lg">
-                No categories found. Start organizing your menu! 📂
-              </p>
             ) : (
-              // --- SCROLLABLE CONTAINER ADDED HERE ---
-              <div className="overflow-x-auto rounded-lg border border-gray-700 max-h-[400px] overflow-y-auto">
-                <Table className="min-w-full">
-                  <TableHeader className="bg-gray-700/50 sticky top-0 z-10">
-                    <TableRow className="hover:bg-gray-700/50">
-                      <TableHead className="text-[#efa765]">
-                        Category Name
-                      </TableHead>
-                      <TableHead className="text-gray-400 hidden sm:table-cell">
-                        Products Count
-                      </TableHead>
-                      <TableHead className="text-[#efa765] text-right">
-                        Actions
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {categories.map((category) => (
-                      <TableRow
-                        key={category._id}
-                        className="border-gray-700 hover:bg-gray-700/70 transition-colors"
-                      >
-                        <TableCell className="font-semibold text-white">
-                          {category.name}
-                        </TableCell>
-                        <TableCell className="text-gray-300 hidden sm:table-cell">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categories.map((category) => (
+                  <Card
+                    key={category._id}
+                    className="bg-gray-700/30 border-gray-600 text-white"
+                  >
+                    <CardContent className="p-4 flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-lg">{category.name}</p>
+                        <p className="text-xs text-gray-400">
                           {
                             products.filter((p) => p.category === category.name)
                               .length
-                          }
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-white hover:bg-gray-600"
-                              >
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="bg-gray-800 border-gray-700 text-white"
-                            >
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleEditCategoryClick(category)
-                                }
-                                className="text-gray-200 hover:bg-gray-700 cursor-pointer"
-                              >
-                                <Edit className="mr-2 h-4 w-4 text-blue-400" />{" "}
-                                Edit Category
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator className="bg-gray-700" />
-                              <DropdownMenuItem
-                                onClick={() => confirmDeleteCategory(category)}
-                                className="text-red-500 hover:bg-red-900 hover:text-red-100 cursor-pointer"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                Category
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                          }{" "}
+                          Products
+                        </p>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0 text-white"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="bg-gray-800 border-gray-700 text-white"
+                        >
+                          <DropdownMenuItem
+                            onClick={() => handleEditCategoryClick(category)}
+                            className="cursor-pointer"
+                          >
+                            <Edit className="mr-2 h-4 w-4 text-blue-400" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => confirmDeleteCategory(category)}
+                            className="text-red-500 cursor-pointer"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-              // --- END SCROLLABLE CONTAINER ---
             )}
           </CollapsibleContent>
         </Collapsible>
@@ -761,8 +808,8 @@ export default function CreateMenuPage() {
 
       {/* --- Product Add/Edit Dialog --- */}
       <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] flex flex-col max-h-[90vh] bg-gray-800/95 backdrop-blur-sm border-[#efa765] text-white">
-          <DialogHeader className="flex-shrink-0">
+        <DialogContent className="sm:max-w-150 flex flex-col max-h-[80vh] bg-gray-800/95 backdrop-blur-sm border-[#efa765] text-white">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="yeseva-one text-[rgb(239,167,101)] text-center text-3xl">
               {editingProduct ? "Edit Product" : "Add New Product"}
             </DialogTitle>
@@ -771,7 +818,7 @@ export default function CreateMenuPage() {
           <Form {...productForm}>
             <form
               onSubmit={productForm.handleSubmit(onProductFormSubmit)}
-              className="flex-grow space-y-4 py-4 overflow-y-auto"
+              className="grow space-y-4 py-4 overflow-y-auto"
             >
               <FormField
                 control={productForm.control}
@@ -920,7 +967,7 @@ export default function CreateMenuPage() {
         open={isCategoryDialogOpen}
         onOpenChange={setIsCategoryDialogOpen}
       >
-        <DialogContent className="sm:max-w-[425px] bg-gray-800/95 backdrop-blur-sm border-[#efa765] text-white">
+        <DialogContent className="sm:max-w-106.25 bg-gray-800/95 backdrop-blur-sm border-[#efa765] text-white">
           <DialogHeader>
             <DialogTitle className="yeseva-one text-[rgb(239,167,101)] text-2xl">
               {editingCategory ? "Edit Category" : "Add New Category"}
