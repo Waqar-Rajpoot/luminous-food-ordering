@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
     if (process.env.STRIPE_SHIPPING_RATE_ID2) {
       shippingOptions.push({ shipping_rate: process.env.STRIPE_SHIPPING_RATE_ID2 });
     }
+
     
     // 5. Create Stripe Session
     const sessionStripe = await stripe.checkout.sessions.create({
