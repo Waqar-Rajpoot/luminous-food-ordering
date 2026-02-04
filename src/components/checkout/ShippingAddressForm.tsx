@@ -110,7 +110,7 @@ const ShippingAddressForm: React.FC<ShippingAddressFormProps> = ({ onFormChange,
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel className="text-[#EFA765]">
-                    Address Line 2 <span className="text-[#EFA765]/50 text-xs font-normal">(Optional)</span>
+                    Address Line 2
                   </FormLabel>
                   <FormControl>
                     <Input 
