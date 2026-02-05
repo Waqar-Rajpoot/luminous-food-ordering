@@ -42,6 +42,7 @@ export interface IOrder extends Document {
   deliveryOTP: string;
   isOTPVerified: boolean;
   deliveryOTPExpiry?: Date;
+  paymentMethod: "stripe" | "cod";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -126,6 +127,7 @@ const OrderSchema: Schema<IOrder> = new mongoose.Schema(
     deliveryOTPExpiry: { 
       type: Date 
     },
+    paymentMethod: { type: String, enum: ['stripe', 'cod'], default: 'stripe' },
     items: { type: [OrderItemSchema], required: true },
     shippingAddress: { type: ShippingAddressSchema, required: true },
   },
