@@ -8,6 +8,8 @@ export async function GET(req: NextRequest) {
   await dbConnect();
   try {
     const session = await getServerSession(authOptions);
+    
+    // Security Guard: Only admins can access the dispatch pipeline
     if (!session || session.user.role !== "admin") {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
@@ -18,14 +20,22 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const assigned = searchParams.get("assigned");
 
-    let query = {};
+    let query: any = {};
+    
     if (assigned === "false") {
-      query = { assignedStaffId: null, orderStatus: "paid" };
+      query = { 
+        assignedStaffId: null, 
+        // We include 'pending' (COD) and 'paid' (Stripe)
+        // We exclude 'canceled' to prevent accidental delivery of voided orders
+        orderStatus: { $in: ["pending", "paid"] } 
+      };
     }
 
     const orders = await Order.find(query)
       .select(
-        "orderId customerName customerEmail finalAmount assignedStaffId shippingAddress items deliveryOTP",
+        // Included paymentMethod so the frontend icons work
+        // Included orderStatus for UI feedback
+        "orderId customerName customerEmail finalAmount assignedStaffId shippingAddress items deliveryOTP paymentMethod orderStatus",
       )
       .sort({ createdAt: -1 });
 

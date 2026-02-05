@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Users, Package, LayoutDashboard, Zap, ShoppingBag, MapPin, Hash } from "lucide-react";
+import { Users, Package, LayoutDashboard, Zap, ShoppingBag, MapPin, Hash, CreditCard, Coins, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { 
@@ -46,6 +46,7 @@ interface Order {
   orderId: string;
   customerName: string;
   customerEmail: string;
+  paymentMethod: 'stripe' | 'cod'; // Added payment method
   finalAmount: number;
   orderStatus: string;
   shippingProgress: string;
@@ -65,8 +66,6 @@ export default function StaffManagementPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [unassignedOrders, setUnassignedOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Refactored state: Track the actual order object for the single modal
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const fetchData = async () => {
@@ -91,7 +90,7 @@ export default function StaffManagementPage() {
   useEffect(() => { fetchData(); }, []);
 
   const onAssignmentSuccess = () => {
-    setSelectedOrder(null); // Close the single modal
+    setSelectedOrder(null);
     fetchData();
   };
 
@@ -157,14 +156,14 @@ export default function StaffManagementPage() {
 
             {/* DESKTOP TABLE VIEW */}
             <div className="hidden md:block bg-[#1D2B3F] border border-[#EFA765]/20 rounded-[2rem] overflow-hidden shadow-2xl">
-              <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+              <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
                 <Table>
                   <TableHeader className="bg-[#141F2D] sticky top-0 z-10">
                     <TableRow className="border-b border-[#EFA765]/10 hover:bg-transparent">
-                      <TableHead className="text-[#EFA765] font-black uppercase text-[10px] tracking-widest py-5">Order ID</TableHead>
-                      <TableHead className="text-[#EFA765] font-black uppercase text-[10px] tracking-widest">Customer</TableHead>
-                      <TableHead className="text-[#EFA765] font-black uppercase text-[10px] tracking-widest">Location</TableHead>
-                      <TableHead className="text-[#EFA765] font-black uppercase text-[10px] tracking-widest">Amount</TableHead>
+                      <TableHead className="text-[#EFA765] font-black uppercase text-[10px] tracking-widest py-5">Order Detail</TableHead>
+                      <TableHead className="text-[#EFA765] font-black uppercase text-[10px] tracking-widest">Customer & Phone</TableHead>
+                      <TableHead className="text-[#EFA765] font-black uppercase text-[10px] tracking-widest">Full Address</TableHead>
+                      <TableHead className="text-[#EFA765] font-black uppercase text-[10px] tracking-widest">Payment</TableHead>
                       <TableHead className="text-right text-[#EFA765] font-black uppercase text-[10px] tracking-widest pr-10">Action</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -178,25 +177,47 @@ export default function StaffManagementPage() {
                     ) : unassignedOrders.map((order) => (
                       <TableRow key={order._id} className="border-b border-[#EFA765]/5 hover:bg-[#EFA765]/5 transition-colors group">
                         <TableCell className="py-4">
-                          <Badge variant="outline" className="border-[#EFA765]/30 text-[#EFA765] font-mono text-[10px]">
-                            {order?.orderId.slice(-8) || "N/A"}
-                          </Badge>
+                          <div className="flex flex-col gap-1">
+                            <Badge variant="outline" className="w-fit border-[#EFA765]/30 text-[#EFA765] font-mono text-[10px]">
+                              #{order?.orderId.slice(-8) || "N/A"}
+                            </Badge>
+                            <span className="text-[10px] text-white/40 flex items-center gap-1">
+                              <Hash size={10} /> {order.items.length} Items
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="text-white font-bold text-sm">{order.customerName}</span>
-                            <span className="text-[10px] text-white/40 italic">{order.customerEmail}</span>
+                            <span className="text-[10px] text-[#EFA765]/80 flex items-center gap-1 font-mono">
+                              <Phone size={10} /> {order.shippingAddress?.phoneNumber}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[250px]">
+                          <div className="flex items-start gap-2 text-white/60 text-xs">
+                            <MapPin size={12} className="text-[#EFA765] mt-0.5 shrink-0" />
+                            <span className="leading-tight">
+                              {order.shippingAddress?.addressLine1}, {order.shippingAddress?.city}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2 text-white/60 text-xs">
-                            <MapPin size={12} className="text-[#EFA765]" />
-                            {order?.shippingAddress?.city}
+                          <div className="flex flex-col gap-1">
+                            <span className="text-white font-black text-sm">
+                              <span className="text-[10px] text-[#EFA765] mr-0.5 font-normal">PKR</span>
+                              {order.finalAmount.toLocaleString()}
+                            </span>
+                            {order.paymentMethod === 'cod' ? (
+                               <span className="text-[9px] font-bold text-amber-500 flex items-center gap-1 uppercase">
+                                 <Coins size={10} /> COD
+                               </span>
+                            ) : (
+                               <span className="text-[9px] font-bold text-blue-400 flex items-center gap-1 uppercase">
+                                 <CreditCard size={10} /> Paid
+                               </span>
+                            )}
                           </div>
-                        </TableCell>
-                        <TableCell className="text-white font-black">
-                          <span className="text-[10px] text-[#EFA765] mr-1">PKR</span>
-                          {order.finalAmount.toLocaleString()}
                         </TableCell>
                         <TableCell className="text-right pr-6">
                           <Button 
@@ -217,28 +238,47 @@ export default function StaffManagementPage() {
             <div className="md:hidden space-y-4">
               {unassignedOrders.map((order) => (
                 <div key={order._id} className="bg-[#1D2B3F] border border-[#EFA765]/20 p-5 rounded-[1.5rem] shadow-lg">
-                  <div className="flex justify-between items-center mb-3">
-                    <Badge className="bg-[#EFA765]/10 text-[#EFA765] border-none text-[9px]">{order.orderId.slice(-8)}</Badge>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex flex-col gap-1">
+                      <Badge className="w-fit bg-[#EFA765]/10 text-[#EFA765] border-none text-[9px]">#{order.orderId.slice(-8)}</Badge>
+                      {order.paymentMethod === 'cod' ? (
+                        <span className="text-[8px] font-bold text-amber-500 flex items-center gap-1 uppercase mt-1">
+                          <Coins size={10} /> Cash on Delivery
+                        </span>
+                      ) : (
+                        <span className="text-[8px] font-bold text-blue-400 flex items-center gap-1 uppercase mt-1">
+                          <CreditCard size={10} /> Paid Online
+                        </span>
+                      )}
+                    </div>
                     <p className="text-white font-black text-lg">PKR {order.finalAmount.toLocaleString()}</p>
                   </div>
-                  <h3 className="text-white font-bold">{order.customerName}</h3>
-                  <div className="flex items-center gap-2 text-white/50 text-[10px] mt-2">
-                    <MapPin size={12} /> {order?.shippingAddress?.city}
-                    <Separator orientation="vertical" className="h-3 bg-white/10" />
-                    <Hash size={12} /> {order.items.length} Items
+                  
+                  <div className="space-y-2 mb-4">
+                    <h3 className="text-white font-bold flex items-center gap-2">
+                      <Users size={14} className="text-[#EFA765]" /> {order.customerName}
+                    </h3>
+                    <p className="text-white/50 text-[10px] flex items-center gap-2">
+                      <Phone size={12} /> {order.shippingAddress?.phoneNumber}
+                    </p>
+                    <p className="text-white/50 text-[10px] flex items-start gap-2 leading-relaxed">
+                      <MapPin size={12} className="shrink-0 mt-0.5" /> 
+                      {order.shippingAddress?.addressLine1}, {order.shippingAddress?.city}
+                    </p>
                   </div>
+
                   <Button 
                     onClick={() => setSelectedOrder(order)}
-                    className="w-full mt-4 bg-[#EFA765] text-[#141F2D] rounded-xl font-black text-[10px] uppercase h-10"
+                    className="w-full bg-[#EFA765] text-[#141F2D] rounded-xl font-black text-[10px] uppercase h-10"
                   >
-                    Assign Now
+                    Deploy to {order.shippingAddress?.city}
                   </Button>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* STAFF SECTION */}
+          {/* STAFF SECTION (Keep existing logic) */}
           <div className="space-y-6">
             <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white/50 px-2 flex items-center gap-2">
               <LayoutDashboard size={16} className="text-[#EFA765]" /> Delivery Force
@@ -267,7 +307,7 @@ export default function StaffManagementPage() {
                   <div className="flex items-center gap-2 pt-4 border-t border-[#EFA765]/10">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button className="flex-[1.5] h-9 text-[9px] bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500 hover:text-black font-black uppercase rounded-xl">Reset Today&apos;s earning</Button>
+                        <Button className="flex-[1.5] h-9 text-[9px] bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500 hover:text-black font-black uppercase rounded-xl">Settlement</Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="bg-[#141F2D] border-[#EFA765]/30 rounded-[2.5rem] text-white">
                         <AlertDialogHeader>
@@ -297,10 +337,13 @@ export default function StaffManagementPage() {
             </DialogHeader>
             {selectedOrder && (
               <>
-                <div className="mt-4 flex flex-col gap-1">
+                <div className="mt-4 flex flex-col gap-2">
                   <p className="text-[10px] text-[#EFA765] font-black uppercase tracking-widest">Active Target:</p>
-                  <p className="text-sm font-bold text-white">Order #{selectedOrder.orderId.slice(-8)}</p>
-                  <p className="text-xs text-white/50">{selectedOrder.customerName} — {selectedOrder.shippingAddress?.city}</p>
+                  <div className="bg-[#141F2D] p-4 rounded-2xl border border-[#EFA765]/10">
+                    <p className="text-sm font-bold text-white mb-1">Order #{selectedOrder.orderId.slice(-8)}</p>
+                    <p className="text-xs text-white/70">{selectedOrder.customerName}</p>
+                    <p className="text-[10px] text-white/40 italic mt-1">{selectedOrder.shippingAddress?.addressLine1}, {selectedOrder.shippingAddress?.city}</p>
+                  </div>
                 </div>
                 <Separator className="bg-[#EFA765]/20 my-6" />
                 <AssignOrderModal 
