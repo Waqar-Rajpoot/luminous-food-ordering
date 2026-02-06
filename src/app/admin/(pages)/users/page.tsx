@@ -10,13 +10,13 @@ import {
   Search,
   User,
   Shield,
-  Briefcase,
   UserCheck,
   ChevronLeft,
   ChevronRight,
   Trash2,
   Calendar,
   Mail,
+  Fingerprint, 
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -56,14 +56,13 @@ interface IUser {
   name: string;
   email: string;
   isVerified: boolean;
-  role: "admin" | "manager" | "staff" | "user";
+  role: "admin" | "staff" | "user";
   createdAt: string;
 }
 
 interface UserStats {
   total: number;
   admin: number;
-  manager: number;
   staff: number;
   user: number;
 }
@@ -94,7 +93,6 @@ export default function AdminUsersPage() {
   const [stats, setStats] = useState<UserStats>({
     total: 0,
     admin: 0,
-    manager: 0,
     staff: 0,
     user: 0,
   });
@@ -139,11 +137,15 @@ export default function AdminUsersPage() {
     setCurrentPage(1);
   };
 
+  // RESOLVED REDIRECT LOGIC FOR NESTED STAFF CONSOLE
   const handleRedirectToDashboard = (user: IUser) => {
     const userId = user._id;
-    if (user?.role === "user") router.push(`/user-dashboard/${userId}`);
-    else if (user?.role === "manager") router.push(`/manager-dashboard/${userId}`);
-    else if (user?.role === "staff") router.push(`/staff-dashboard/${userId}`);
+    if (user?.role === "user") {
+        router.push(`/user-dashboard/${userId}`);
+    } else if (user?.role === "staff") {
+        // Directing to the nested staff-console route
+        router.push(`/user-dashboard/${userId}/staff-console`);
+    }
   };
 
   const handleUpdateRole = async (userId: string, newRole: IUser["role"]) => {
@@ -178,7 +180,6 @@ export default function AdminUsersPage() {
   const roleBadgeClasses = (role: IUser["role"]) => {
     switch (role) {
       case "admin": return "bg-red-700/20 text-red-300 border-red-700/40 border";
-      case "manager": return "bg-blue-700/20 text-blue-300 border-blue-700/40 border";
       case "staff": return "bg-green-700/20 text-green-300 border-green-700/40 border";
       default: return "bg-yellow-700/20 text-yellow-300 border-yellow-700/40 border";
     }
@@ -198,12 +199,10 @@ export default function AdminUsersPage() {
           {title}
         </CardTitle>
         <div className={`${iconColor} shrink-0`}>
-          {/* Increased icon size from scale-75 to scale-100 */}
           {icon}
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0 overflow-hidden">
-        {/* Increased text size for the value */}
         <div className="text-2xl md:text-4xl font-bold text-[#efa765] truncate">{value}</div>
         <p className="text-[11px] text-gray-500 mt-1 truncate">{description}</p>
       </CardContent>
@@ -213,7 +212,6 @@ export default function AdminUsersPage() {
   return (
     <div className="flex-1 flex flex-col pt-3 px-4 md:px-8 md:pt-16 lg:pt-20 min-h-screen w-full max-w-7xl mx-auto overflow-x-hidden">
       
-      {/* Title Section */}
       <div className="mb-6">
         <h1 className="yeseva-one text-3xl md:text-5xl font-bold mb-1 tracking-wide text-[#efa765]">
           User Management
@@ -223,16 +221,13 @@ export default function AdminUsersPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-5 mb-6">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard title="Total" value={stats.total} icon={<Users className="h-5 w-5" />} iconColor="text-[#efa765]" description="Active" />
         <StatCard title="Admins" value={stats.admin} icon={<Shield className="h-5 w-5" />} iconColor="text-red-500" description="High Access" />
-        <StatCard title="Managers" value={stats.manager} icon={<Briefcase className="h-5 w-5" />} iconColor="text-blue-400" description="Operations" />
         <StatCard title="Staff" value={stats.staff} icon={<UserCheck className="h-5 w-5" />} iconColor="text-green-500" description="Standard" />
         <StatCard title="Basic" value={stats.user} icon={<User className="h-5 w-5" />} iconColor="text-yellow-500" description="Customers" />
       </div>
 
-      {/* Search & Filters */}
       <div className="flex flex-col gap-3 mb-6 p-4 rounded-lg bg-[#1c2a3b] border border-[#efa765]/20">
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
@@ -244,7 +239,7 @@ export default function AdminUsersPage() {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar touch-pan-x">
-          {["all", "admin", "manager", "staff", "user"].map((role) => (
+          {["all", "admin", "staff", "user"].map((role) => (
             <button key={role} onClick={() => handleRoleFilterChange(role as any)} className={roleFilterButtonClasses(role as any)}>
               {role.charAt(0).toUpperCase() + role.slice(1)}
             </button>
@@ -252,7 +247,6 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* Main Table/Card Container */}
       <div className="rounded-xl border border-[#efa765]/30 bg-[#141f2d]/30 text-white shadow-xl overflow-hidden">
         {isLoading ? (
           <div className="flex flex-col justify-center items-center py-16 text-[#efa765]">
@@ -267,6 +261,7 @@ export default function AdminUsersPage() {
               <Table>
                 <TableHeader className="bg-[#1c2a3b] text-[#efa765]">
                   <TableRow className="border-gray-800">
+                    <TableHead className="text-[#efa765] font-bold">User ID</TableHead>
                     <TableHead className="text-[#efa765] font-bold">Name</TableHead>
                     <TableHead className="text-[#efa765] font-bold">Email</TableHead>
                     <TableHead className="text-[#efa765] font-bold">Status</TableHead>
@@ -278,7 +273,15 @@ export default function AdminUsersPage() {
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user._id} className="border-gray-800/50 hover:bg-[#1c2a3b]/40">
-                      <TableCell className="font-medium truncate max-w-[150px] cursor-pointer" onClick={() => handleRedirectToDashboard(user)}>{user.name}</TableCell>
+                      <TableCell 
+                        className="text-[#efa765] font-mono text-[10px] cursor-pointer hover:underline flex items-center gap-1.5"
+                        onClick={() => handleRedirectToDashboard(user)}
+                      >
+                        <Fingerprint className="h-3 w-3 opacity-70" />
+                        {user._id.substring(0, 8)}...
+                      </TableCell>
+                      
+                      <TableCell className="font-medium truncate max-w-[150px]">{user.name}</TableCell>
                       <TableCell className="text-gray-400 truncate max-w-[200px]">{user.email}</TableCell>
                       <TableCell>
                         <Badge className={`text-[10px] ${user.isVerified ? "bg-green-900/20 text-green-400" : "bg-red-900/20 text-red-400"}`}>
@@ -298,13 +301,20 @@ export default function AdminUsersPage() {
               </Table>
             </div>
 
-            {/* Mobile Cards with matched border lines */}
             <div className="md:hidden divide-y divide-[#efa765]/20 w-full">
               {users.map((user) => (
                 <div key={user._id} className="p-4 space-y-3 bg-[#141f2d]/50 w-full box-border border-b border-[#efa765]/10 last:border-0">
                   <div className="flex justify-between items-start gap-2 w-full">
-                    <div className="cursor-pointer overflow-hidden flex-1 min-w-0" onClick={() => handleRedirectToDashboard(user)}>
-                      <h3 className="font-bold text-[#efa765] text-lg truncate">{user.name}</h3>
+                    <div className="overflow-hidden flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span 
+                          onClick={() => handleRedirectToDashboard(user)}
+                          className="text-[10px] font-mono text-[#efa765] bg-[#efa765]/10 px-1.5 py-0.5 rounded cursor-pointer border border-[#efa765]/20 flex items-center gap-1"
+                        >
+                          <Fingerprint className="h-2.5 w-2.5" /> ID: {user._id.substring(0, 8)}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-white text-lg truncate">{user.name}</h3>
                       <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 truncate">
                         <Mail className="h-3.5 w-3.5 flex-shrink-0"/> {user.email}
                       </p>
@@ -330,7 +340,6 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      {/* Pagination Footer */}
       <div className="flex justify-between items-center mt-6 p-4 rounded-lg bg-[#1c2a3b]/50 border border-[#efa765]/20 mb-8">
         <div className="text-gray-400 text-xs md:text-sm font-medium">
           Page {currentPage}/{totalPages} <span className="text-[#efa765] ml-2">{totalUsers} Users</span>
@@ -348,14 +357,13 @@ export default function AdminUsersPage() {
   );
 }
 
-// Sub-components logic...
 const RoleSelect = ({ user, isActionLoading, handleUpdateRole, roleBadgeClasses }: any) => (
   <Select value={user.role} onValueChange={(val: any) => handleUpdateRole(user._id, val)} disabled={isActionLoading === user._id}>
     <SelectTrigger className={`w-[105px] md:w-[110px] h-8 md:h-9 text-[11px] font-bold capitalize border-none focus:ring-0 ${roleBadgeClasses(user.role)} shadow-sm`}>
       <SelectValue />
     </SelectTrigger>
     <SelectContent className="bg-[#1c2a3b] text-white border-[#efa765]/30">
-      {["admin", "manager", "staff", "user"].map(r => (
+      {["admin", "staff", "user"].map(r => (
         <SelectItem key={r} value={r} className="capitalize text-xs focus:bg-[#efa765] focus:text-black cursor-pointer">{r}</SelectItem>
       ))}
     </SelectContent>

@@ -50,6 +50,7 @@ export default function AdminNavbar() {
   };
 
   return (
+    <div className="h-12 w-full">
     <nav className="fixed top-0 left-0 w-full max-w-full z-100 bg-[#141F2D]/95 border-b border-white/5 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between overflow-hidden">
         
@@ -154,5 +155,6 @@ export default function AdminNavbar() {
         </div>
       </div>
     </nav>
+    </div>
   );
 }
