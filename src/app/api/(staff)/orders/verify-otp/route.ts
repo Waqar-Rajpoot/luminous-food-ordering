@@ -48,8 +48,9 @@ export async function POST(request: NextRequest) {
     order.isOTPVerified = true;
     order.deliveryStatus = "delivered";
     order.shippingProgress = "delivered";
-    order.isEarningsPaid = false; 
-    order.deliveredAt = new Date(); // Good for records/history
+    order.isEarningsPaid = false;
+    order.orderStatus = "paid"; 
+    order.deliveredAt = new Date();
 
     await order.save();
 
