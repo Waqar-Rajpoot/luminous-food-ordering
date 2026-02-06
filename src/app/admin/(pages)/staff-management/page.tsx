@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Users, Package, LayoutDashboard, Zap, ShoppingBag, MapPin, Hash, CreditCard, Coins, Phone } from "lucide-react";
+import Link from "next/link"; // Added for redirection
+import { Users, Package, LayoutDashboard, Zap, ShoppingBag, MapPin, Hash, CreditCard, Coins, Phone, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { 
@@ -25,42 +26,11 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
-
-interface ShippingAddress {
-  fullName: string;
-  addressLine1: string;
-  city: string;
-  state: string;
-  phoneNumber: string;
-}
-
-interface Order {
-  _id: string;
-  orderId: string;
-  customerName: string;
-  customerEmail: string;
-  paymentMethod: 'stripe' | 'cod'; // Added payment method
-  finalAmount: number;
-  orderStatus: string;
-  shippingProgress: string;
-  deliveryOTP: string;
-  items: OrderItem[];
-  shippingAddress: ShippingAddress;
-}
-
-interface StaffMember {
-  _id: string;
-  name: string;
-  email: string;
-  activeWorkload?: number;
-}
+// ... (Interfaces remain exactly the same)
+interface OrderItem { id: string; name: string; price: number; quantity: number; image: string; }
+interface ShippingAddress { fullName: string; addressLine1: string; city: string; state: string; phoneNumber: string; }
+interface Order { _id: string; orderId: string; customerName: string; customerEmail: string; paymentMethod: 'stripe' | 'cod'; finalAmount: number; orderStatus: string; shippingProgress: string; deliveryOTP: string; items: OrderItem[]; shippingAddress: ShippingAddress; }
+interface StaffMember { _id: string; name: string; email: string; activeWorkload?: number; }
 
 export default function StaffManagementPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -116,7 +86,7 @@ export default function StaffManagementPage() {
     <div className="min-h-screen bg-[#141F2D] p-4 sm:p-6 md:p-10 text-[#EFA765] font-sans selection:bg-[#EFA765]/20">
       <div className="max-w-7xl mx-auto">
         
-        {/* Header Section */}
+        {/* Header Section (Unchanged) */}
         <div className="bg-[#1D2B3F] p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] shadow-xl border border-[#EFA765]/20 mb-6 sm:mb-10">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2">
@@ -142,7 +112,6 @@ export default function StaffManagementPage() {
         </div>
 
         <div className="flex flex-col gap-8">
-          
           {/* ORDERS SECTION */}
           <div className="space-y-4">
             <div className="flex items-center justify-between px-2">
@@ -178,9 +147,12 @@ export default function StaffManagementPage() {
                       <TableRow key={order._id} className="border-b border-[#EFA765]/5 hover:bg-[#EFA765]/5 transition-colors group">
                         <TableCell className="py-4">
                           <div className="flex flex-col gap-1">
-                            <Badge variant="outline" className="w-fit border-[#EFA765]/30 text-[#EFA765] font-mono text-[10px]">
-                              #{order?.orderId.slice(-8) || "N/A"}
-                            </Badge>
+                            {/* Updated with Link to Details */}
+                            <Link href={`/order-details/${order.orderId}`}>
+                              <Badge variant="outline" className="w-fit border-[#EFA765]/30 text-[#EFA765] font-mono text-[10px] hover:bg-[#EFA765] hover:text-black cursor-pointer transition-all flex items-center gap-1">
+                                #{order?.orderId.slice(-8) || "N/A"} <ExternalLink size={8} />
+                              </Badge>
+                            </Link>
                             <span className="text-[10px] text-white/40 flex items-center gap-1">
                               <Hash size={10} /> {order.items.length} Items
                             </span>
@@ -240,7 +212,12 @@ export default function StaffManagementPage() {
                 <div key={order._id} className="bg-[#1D2B3F] border border-[#EFA765]/20 p-5 rounded-[1.5rem] shadow-lg">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex flex-col gap-1">
-                      <Badge className="w-fit bg-[#EFA765]/10 text-[#EFA765] border-none text-[9px]">#{order.orderId.slice(-8)}</Badge>
+                      {/* Updated with Link to Details */}
+                      <Link href={`/order-details/${order._id}`}>
+                        <Badge className="w-fit bg-[#EFA765]/10 text-[#EFA765] border border-[#EFA765]/20 text-[9px] flex items-center gap-1">
+                          #{order.orderId.slice(-8)} <ExternalLink size={8} />
+                        </Badge>
+                      </Link>
                       {order.paymentMethod === 'cod' ? (
                         <span className="text-[8px] font-bold text-amber-500 flex items-center gap-1 uppercase mt-1">
                           <Coins size={10} /> Cash on Delivery
@@ -278,7 +255,7 @@ export default function StaffManagementPage() {
             </div>
           </div>
 
-          {/* STAFF SECTION (Keep existing logic) */}
+          {/* STAFF SECTION (Unchanged) */}
           <div className="space-y-6">
             <h2 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white/50 px-2 flex items-center gap-2">
               <LayoutDashboard size={16} className="text-[#EFA765]" /> Delivery Force
@@ -327,7 +304,7 @@ export default function StaffManagementPage() {
           </div>
         </div>
 
-        {/* SINGLE GLOBAL ASSIGNMENT MODAL */}
+        {/* SINGLE GLOBAL ASSIGNMENT MODAL (Unchanged) */}
         <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
           <DialogContent className="bg-[#1D2B3F] border-[#EFA765]/30 p-8 max-w-md rounded-[2.5rem] text-white">
             <DialogHeader>
