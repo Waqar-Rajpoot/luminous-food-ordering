@@ -90,7 +90,7 @@ export default function StaffManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#141F2D] p-4 sm:p-6 md:p-10 text-[#EFA765] font-sans selection:bg-[#EFA765]/20">
+    <div className="min-h-screen bg-[#141F2D] p-4 sm:p-6 md:p-8 text-[#EFA765] font-sans selection:bg-[#EFA765]/20">
       <div className="max-w-7xl mx-auto">
         
         {/* Header Section */}

@@ -223,9 +223,9 @@ export default function SettingsPage() {
                     <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black italic text-[#EFA765]/30 text-xl">KM</span>
                   </div>
                   <ErrorMessage field="deliveryRadius" />
-               </div>
+              </div>
 
-               <div className="space-y-4">
+              <div className="space-y-4">
                   <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#EFA765]">ETA Logic</label>
                   <div className="relative group">
                     <Input 

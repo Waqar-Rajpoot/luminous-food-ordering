@@ -602,7 +602,6 @@ const ManagementHeader: React.FC<ManagementHeaderProps> = ({ fetchOrders }) => (
 const OrderPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  // const [, setShowConfirmModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -833,7 +832,7 @@ const OrderPage = () => {
   // --- MAIN RENDER ---
   return (
     <>
-      <div className="min-h-screen bg-[#141F2D] p-4 sm:pt-25 text-[#EFA765] font-sans">
+      <div className="min-h-screen bg-[#141F2D] p-4 sm:pt-10 text-[#EFA765] font-sans p-4 sm:p-6 md:p-10">
         {/* TOP HEADER */}
         <div className="mb-8 border-b border-[#EFA765]/20 pb-4">
           <ManagementHeader fetchOrders={fetchOrders} />

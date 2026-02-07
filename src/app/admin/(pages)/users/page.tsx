@@ -210,7 +210,7 @@ export default function AdminUsersPage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col pt-3 px-4 md:px-8 md:pt-16 lg:pt-20 min-h-screen w-full max-w-7xl mx-auto overflow-x-hidden">
+    <div className="flex-1 flex flex-col pt-3 px-4 md:px-8 md:pt-6 lg:pt-8 min-h-screen w-full max-w-7xl mx-auto overflow-x-hidden p-4 sm:p-6 md:p-10">
       
       <div className="mb-6">
         <h1 className="yeseva-one text-3xl md:text-5xl font-bold mb-1 tracking-wide text-[#efa765]">

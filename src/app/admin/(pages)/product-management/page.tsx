@@ -440,7 +440,7 @@ export default function CreateMenuPage() {
     redirect("/sign-in");
   }
   return (
-    <div className="min-h-screen bg-[#141f2d] p-4 sm:p-8 text-white">
+    <div className="min-h-screen bg-[#141f2d] text-white p-4 sm:p-6 md:p-10">
       <h1 className="yeseva-one text-[rgb(239,167,101)] text-4xl md:text-6xl font-bold text-center mb-8 md:mb-12 drop-shadow-lg tracking-wider">
         Product Command Center
       </h1>

@@ -131,13 +131,13 @@ export default function AdminMessagesPage() {
   };
 
   return (
-    <div className="min-h-screen text-white p-4 md:p-8 lg:pt-20 w-full overflow-x-hidden flex flex-col items-center">
+    <div className="min-h-screen text-white lg:pt-8 w-full overflow-x-hidden flex flex-col items-center p-4 sm:p-6 md:p-10">
       <div className="max-w-7xl w-full">
         
         {/* Header Section */}
-        <div className="mb-6 p-4 md:p-6 bg-[#141f2d] rounded-xl border border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mb-6 p-4 md:p-4 bg-[#141f2d] rounded-xl border border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="yeseva-one text-2xl md:text-5xl text-[#efa765] tracking-wide">
+            <h1 className="font-black text-2xl md:text-5xl text-[#efa765] tracking-wide">
               Inquiry Dashboard
             </h1>
             <p className="text-gray-400 text-xs md:text-base mt-1">

@@ -96,7 +96,7 @@ export default function CreateDealPage() {
   return (
     <div className="min-h-screen bg-[#141F2D] text-[#EFA765] overflow-x-hidden flex flex-col justify-center items-center">
       
-      <div className="max-w-4xl mx-auto md:mx-0 px-4 py-8 sm:px-2 lg:px-8 pt-24 space-y-10">
+      <div className="max-w-4xl mx-auto md:mx-0 px-4 py-4 sm:px-2 lg:px-4 pt-8 space-y-10">
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/5 pb-6 gap-4">

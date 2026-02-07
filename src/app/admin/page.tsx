@@ -47,7 +47,7 @@ export default function AdminDashboard() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="min-h-screen text-slate-100 p-4 sm:p-6 lg:p-12">
+    <div className="min-h-screen text-slate-100 p-4 sm:p-6 lg:px-12">
       <div className="max-w-7xl mx-auto">
         
         {/* Top Branding & Profile - Responsive flex and text sizes */}
