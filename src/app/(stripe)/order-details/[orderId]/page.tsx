@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   MapPin,
   QrCode,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -89,7 +90,7 @@ export default async function OrderDetailsPage({ params }: any) {
         <CardContent className="space-y-6 px-0 md:px-6">
           <Separator className="bg-[#EFA765]/30 my-2 md:my-4" />
 
-          {/* OTP & QR VERIFICATION SECTION */}
+          {/* OTP & QR VERIFICATION SECTION (Keep functionality) */}
           {isEligibleForVerification && (
             <div className="bg-[#EFA765]/5 border-2 border-dashed border-[#EFA765]/30 rounded-2xl md:rounded-3xl p-4 md:p-6 mb-4 md:mb-8 text-center">
               <div className="flex flex-col items-center justify-center space-y-4">
@@ -106,13 +107,12 @@ export default async function OrderDetailsPage({ params }: any) {
                   </div>
                 ) : (
                   <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 w-full py-2 md:py-4">
-                    {/* Visual QR Code */}
                     <div className="bg-white p-2 md:p-3 rounded-xl md:rounded-2xl shadow-lg border-2 md:border-4 border-[#EFA765]/20">
                       <QRCodeSVG 
                         value={qrData} 
-                        size={120} // Slightly smaller for mobile
+                        size={120} 
                         level="H"
-                        className="md:w-[150px] md:h-[150px]"
+                        className="md:w-37.5 md:h-37.5"
                       />
                     </div>
 
@@ -123,7 +123,7 @@ export default async function OrderDetailsPage({ params }: any) {
                       <h2 className="text-4xl md:text-5xl font-mono font-black text-[#EFA765] tracking-[0.15em] md:tracking-[0.2em]">
                         {order.deliveryOTP}
                       </h2>
-                      <p className="text-white/60 text-xs md:text-sm mt-3 max-w-[280px] text-center md:text-left leading-relaxed">
+                      <p className="text-white/60 text-xs md:text-sm mt-3 max-w-70 text-center md:text-left leading-relaxed">
                         Show this QR code or the 6-digit number to the delivery partner upon arrival.
                       </p>
                     </div>
@@ -133,7 +133,7 @@ export default async function OrderDetailsPage({ params }: any) {
             </div>
           )}
 
-          {/* Info Grid - Stacks on Mobile */}
+          {/* Info Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
              <div className="space-y-2 bg-[#141F2D]/30 p-4 rounded-xl md:p-0 md:bg-transparent">
                <h3 className="text-lg md:text-xl font-bold flex items-center text-[#EFA765]"><Receipt className="mr-2 h-5 w-5" /> Summary</h3>
@@ -207,16 +207,30 @@ export default async function OrderDetailsPage({ params }: any) {
             </div>
           </div>
 
-          {/* Footer Pricing & Home Button */}
-          <div className="space-y-6 pt-4">
-            <div className="text-right text-xl md:text-2xl text-[#EFA765] font-bold border-t border-[#EFA765]/30 pt-4">
-              <span className="text-sm md:text-lg text-white/40 mr-2 uppercase font-medium">Grand Total:</span>
-              PKR {order.totalAmount.toFixed(2)}
+          {/* UPDATED: Detailed Financial Section */}
+          <div className="space-y-3 pt-6 border-t border-[#EFA765]/30">
+            <div className="flex justify-between items-center text-sm md:text-base">
+              <span className="text-white/50 uppercase font-bold tracking-tighter">Subtotal</span>
+              <span className="text-white font-mono">PKR {order.totalAmount.toLocaleString()}</span>
             </div>
 
-            <div className="text-center">
+            {order.discountAmount > 0 && (
+              <div className="flex justify-between items-center text-sm md:text-base text-emerald-400 italic">
+                <span className="flex items-center gap-2 font-bold uppercase tracking-tighter">
+                  <Tag size={14} /> Global Discount
+                </span>
+                <span className="font-mono">- PKR {order.discountAmount.toLocaleString()}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center pt-4 text-2xl md:text-3xl font-black italic">
+              <span className="text-xs md:text-sm not-italic uppercase tracking-widest text-white/40">Grand Total</span>
+              <span className="text-[#EFA765]">PKR {order.finalAmount.toLocaleString()}</span>
+            </div>
+
+            <div className="text-center pt-8">
               <Link href="/">
-                <Button variant="outline" className="border-[#EFA765] text-[#EFA765] bg-[#141F2D] hover:bg-[#EFA765] hover:text-[#141F2D] rounded-full px-8 md:px-12 w-full md:w-auto transition-all font-bold h-12">
+                <Button variant="outline" className="border-[#EFA765] text-[#EFA765] bg-[#141F2D] hover:bg-[#EFA765] hover:text-[#141F2D] rounded-full px-8 md:px-12 w-full md:w-auto transition-all font-bold h-12 uppercase italic tracking-wider">
                   Back to Home
                 </Button>
               </Link>
@@ -225,7 +239,6 @@ export default async function OrderDetailsPage({ params }: any) {
         </CardContent>
       </Card>
       
-      {/* Decorative spacing for mobile bottom navigation if present */}
       <div className="h-8 md:hidden" />
     </div>
   );

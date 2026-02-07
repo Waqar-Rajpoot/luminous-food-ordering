@@ -1,97 +1,160 @@
-// File: app/api/settings/route.ts
+// import dbConnect from "@/lib/dbConnect";
+// import SettingsModel from "@/models/Settings.model";
+// import { NextResponse } from "next/server";
+// import { getServerSession } from "next-auth";
+// import { settingsSchema } from "@/schemas/settingsSchema";
+// import { authOptions } from "../../auth/[...nextauth]/options";
 
-import dbConnect from "@/lib/dbConnect"; // Your database connection utility
+// export const dynamic = 'force-dynamic';
+
+// export async function GET() {
+//   try {
+//     await dbConnect();
+//     const settings = await SettingsModel.findOne().lean();
+    
+//     if (!settings) {
+//       return NextResponse.json({ success: false, message: "No settings found" }, { status: 404 });
+//     }
+
+//     return NextResponse.json({ success: true, settings });
+//   } catch (error) {
+//     console.error("Settings Fetch Error:", error);
+//     return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+//   }
+// }
+
+// export async function PUT(req: Request) {
+//   try {
+//     await dbConnect();
+    
+//     const session = await getServerSession(authOptions);
+//     if (!session || session.user.role !== "admin") {
+//       return NextResponse.json({ 
+//         success: false, 
+//         message: "Unauthorized. Admin access required." 
+//       }, { status: 401 });
+//     }
+
+//     const body = await req.json();
+
+//     const { 
+//       _id: _unusedId, 
+//       __v: _unusedV, 
+//       createdAt: _unusedCA, 
+//       updatedAt: _unusedUA, 
+//       ...cleanData 
+//     } = body;
+
+//     // 3. Data Validation
+//     const validation = settingsSchema.safeParse(cleanData);
+//     if (!validation.success) {
+//       return NextResponse.json({ 
+//         success: false, 
+//         errors: validation.error.flatten().fieldErrors 
+//       }, { status: 400 });
+//     }
+
+//     // 4. Update Database
+//     const updatedSettings = await SettingsModel.findOneAndUpdate(
+//       {}, 
+//       validation.data, 
+//       { 
+//         upsert: true, 
+//         new: true, 
+//         runValidators: true 
+//       }
+//     );
+
+//     return NextResponse.json({ 
+//       success: true, 
+//       message: "Configuration Synced Successfully", 
+//       settings: updatedSettings 
+//     });
+
+//   } catch (error) {
+//     console.error("Settings Update Error:", error);
+//     return NextResponse.json({ 
+//       success: false, 
+//       error: "Critical Database Error." 
+//     }, { status: 500 });
+//   }
+// }
+
+
+
+
+
+
+import dbConnect from "@/lib/dbConnect";
 import SettingsModel from "@/models/Settings.model";
-import { UpdateSettingsSchema } from "@/schemas/updateSettingsSchema";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { settingsSchema } from "@/schemas/settingsSchema";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
-// Zod schema for validating incoming PATCH data
+export const dynamic = 'force-dynamic';
 
-
-/**
- * @method GET
- * @route /api/settings
- * @description Retrieves the single, global restaurant settings document.
- */
 export async function GET() {
-  await dbConnect();
-
   try {
-    // Find the single settings document, or create it if none exists
-    let settings = await SettingsModel.findOne({});
-
+    await dbConnect();
+    const settings = await SettingsModel.findOne().lean();
+    
     if (!settings) {
-      // Create a default settings document if it doesn't exist
-      settings = await SettingsModel.create({});
+      return NextResponse.json({ success: false, message: "No settings found" }, { status: 404 });
     }
 
-    return NextResponse.json(settings, { status: 200 });
-
+    return NextResponse.json({ success: true, settings });
   } catch (error) {
-    console.error("Error fetching settings:", error);
-    return NextResponse.json(
-      { message: "Error fetching restaurant settings.", success: false },
-      { status: 500 }
-    );
+    console.error("Settings Fetch Error:", error);
+    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-/**
- * @method PATCH
- * @route /api/settings
- * @description Updates the single, global restaurant settings document.
- */
-export async function PATCH(request: NextRequest) {
-  await dbConnect();
-
+export async function PUT(req: Request) {
   try {
-    const body = await request.json();
-
-    // 1. Validate the incoming data
-    const validationResult = UpdateSettingsSchema.safeParse(body);
-    if (!validationResult.success) {
-        console.error("Validation Error:", validationResult.error.issues);
-      return NextResponse.json(
-        { 
-            message: "Invalid data provided for settings update.", 
-            errors: validationResult.error.issues 
-        },
-        { status: 400 }
-      );
+    await dbConnect();
+    
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ 
+        success: false, 
+        message: "Unauthorized. Admin access required." 
+      }, { status: 401 });
     }
 
-    const updatePayload = validationResult.data;
+    const body = await req.json();
 
-    // 2. Find and update the single settings document (upsert: true creates it if it doesn't exist)
+    const validation = settingsSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return NextResponse.json({ 
+        success: false, 
+        errors: validation.error.flatten().fieldErrors 
+      }, { status: 400 });
+    }
+
+    // 2. Update Database using ONLY validated data
     const updatedSettings = await SettingsModel.findOneAndUpdate(
-      {}, // Match any document (since there should only be one)
-      { $set: updatePayload }, // Apply all validated changes
-      { new: true, upsert: true, runValidators: true } // Return new document, create if missing, run schema checks
+      {}, 
+      validation.data,
+      { 
+        upsert: true, 
+        new: true, 
+        runValidators: true 
+      }
     );
 
-    if (!updatedSettings) {
-        // This should not happen with upsert:true, but acts as a safeguard
-        return NextResponse.json(
-            { message: "Failed to update settings.", success: false },
-            { status: 500 }
-        );
-    }
-
-
-    return NextResponse.json(
-      {
-        message: "Settings updated successfully.",
-        success: true,
-        settings: updatedSettings,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ 
+      success: true, 
+      message: "Configuration Synced Successfully", 
+      settings: updatedSettings 
+    });
 
   } catch (error) {
-    console.error("Error updating settings:", error);
-    return NextResponse.json(
-      { message: "An internal server error occurred during update.", success: false },
-      { status: 500 }
-    );
+    console.error("Settings Update Error:", error);
+    return NextResponse.json({ 
+      success: false, 
+      error: "Critical Database Error." 
+    }, { status: 500 });
   }
 }

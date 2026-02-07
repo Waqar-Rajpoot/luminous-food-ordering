@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order.model";
+import Settings from "@/models/Settings.model"; // Ensure you import your Settings model
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import mongoose from "mongoose";
@@ -19,8 +20,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    // Added earningAmount to destructuring
-    const { orderId, staffId, earningAmount } = body;
+    // Removed earningAmount from request body
+    const { orderId, staffId } = body;
 
     // 2. Validate Input
     if (!orderId || !staffId) {
@@ -30,14 +31,6 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Validate that earningAmount is a number and not negative
-    if (typeof earningAmount !== 'number' || earningAmount < 0) {
-        return NextResponse.json(
-          { success: false, message: "A valid earning amount is required." },
-          { status: 400 }
-        );
-      }
-
     if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(staffId)) {
       return NextResponse.json(
         { success: false, message: "Invalid ID format." },
@@ -45,7 +38,12 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // 3. Update the Order
+    // 3. Fetch Delivery Earning from Settings
+    // Assuming your settings document contains a 'deliveryFee' or 'staffCommission' field
+    const settings = await Settings.findOne({});
+    const globalEarningAmount = settings?.staffCommission || 50; // Fallback to 150 if not set
+
+    // 4. Update the Order
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       {
@@ -53,8 +51,8 @@ export async function PATCH(request: NextRequest) {
           assignedStaffId: staffId,
           deliveryStatus: "assigned",
           assignmentDate: new Date(),
-          deliveryEarning: earningAmount, // New field added here
-          isEarningsPaid: false,          // Ensure it's marked as unpaid upon assignment
+          deliveryEarning: globalEarningAmount, // Pulling from global settings
+          isEarningsPaid: false,
         },
       },
       { new: true } 
@@ -70,7 +68,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: `Order successfully assigned with earning of PKR ${earningAmount}.`,
+        message: `Order successfully assigned. Earning of PKR ${globalEarningAmount} applied from settings.`,
         order: updatedOrder,
       },
       { status: 200 }

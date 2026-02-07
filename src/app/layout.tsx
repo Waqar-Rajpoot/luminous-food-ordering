@@ -9,6 +9,7 @@ import { CartProvider } from "@/context/CartContext";
 import { PageProvider } from "@/context/PageContext";
 import ContentManager from "@/components/ContentManager";
 import NavbarSwitcher from "@/components/NavbarSwitcher";
+import StoreStatusBanner from "@/components/global/StoreStatusBanner";
 
 export const metadata: Metadata = {
   title: "Luminous Bistro - Illuminate Your Taste Buds",
@@ -51,6 +52,7 @@ export default function RootLayout({
             <CartProvider>
               <PageProvider>
                 <NavbarSwitcher />
+                <StoreStatusBanner />
                 <ContentManager>{children}</ContentManager>
                 <Footer />
                 <Toaster />

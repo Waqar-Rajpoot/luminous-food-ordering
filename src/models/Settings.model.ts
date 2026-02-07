@@ -1,34 +1,86 @@
-// File: models/Settings.ts
+// import mongoose, { Schema } from "mongoose";
 
-import mongoose, { Schema, Document, Model } from 'mongoose';
+// const SettingsSchema = new Schema(
+//   {
+//     // 1. Store Operations
+//     isStoreOpen: { type: Boolean, default: true },
+//     operatingHours: {
+//       open: { type: String, default: "09:00" },
+//       close: { type: String, default: "23:00" },
+//     },
+//     estimatedDeliveryTime: { type: String, default: "30-45 mins" },
+//     minOrderValue: { type: Number, default: 500 },
 
-export interface IRestaurantSettings extends Document {
-  openingTime: string;
-  closingTime: string;
-  isClosedToday: boolean;
-  lastOrderTime: string;
-  maxPartySize: number;
-  reservationEnabled: boolean;
-  phoneNumber: string;
-  publicEmail: string;
-  address: string;
-}
+//     // 2. Logistics
+//     deliveryRadius: { type: Number, default: 10 },
+//     staffCommission: { type: Number, default: 50 },
 
-const SettingsSchema: Schema = new Schema({
-  openingTime: { type: String, default: "10:00" },
-  closingTime: { type: String, default: "22:00" },
-  isClosedToday: { type: Boolean, default: false },
-  lastOrderTime: { type: String, default: "21:30" },
-  maxPartySize: { type: Number, default: 6 },
-  reservationEnabled: { type: Boolean, default: true },
-  phoneNumber: { type: String, default: "+92 3XX XXXXXXX" },
-  publicEmail: { type: String, default: "info@restaurant.com" },
-  address: { type: String, default: "123 Restaurant St." },
-});
+//     // 3. Financials
+//     paymentMethods: {
+//       stripe: { type: Boolean, default: true },
+//       cod: { type: Boolean, default: true },
+//     },
+//     taxPercentage: { type: Number, default: 5 },
 
-// Use existing model if it exists, otherwise create a new one
-const SettingsModel: Model<IRestaurantSettings> = 
-  (mongoose.models.Settings as Model<IRestaurantSettings>) || 
-  mongoose.model<IRestaurantSettings>('Settings', SettingsSchema);
+//     // 4. Inventory
+//     featuredLimit: { type: Number, default: 6 },
+//     globalDiscount: { type: Number, default: 0 },
 
-export default SettingsModel;
+//     // 5. System
+//     adminNotifications: { type: Boolean, default: true },
+//     maintenanceMode: { type: Boolean, default: false },
+//   },
+//   { timestamps: true },
+// );
+
+// export default mongoose.models.Settings ||
+//   mongoose.model("Settings", SettingsSchema);
+
+
+
+
+
+
+import mongoose, { Schema } from "mongoose";
+
+const SettingsSchema = new Schema(
+  {
+    // 1. Store Operations
+    isStoreOpen: { type: Boolean, default: true },
+    operatingHours: {
+      open: { type: String, default: "09:00" },
+      close: { type: String, default: "23:00" },
+    },
+    estimatedDeliveryTime: { type: String, default: "30-45 mins" },
+    minOrderValue: { type: Number, default: 500 },
+
+    // 2. Logistics
+    deliveryRadius: { type: Number, default: 10 },
+    staffCommission: { type: Number, default: 50 },
+
+    // 3. Financials (Matching your JSON exactly)
+    paymentMethods: {
+      stripe: { type: Boolean, default: true },
+      cod: { type: Boolean, default: true },
+    },
+    taxPercentage: { type: Number, default: 0 },
+    globalDiscount: { type: Number, default: 0 },
+
+    // 4. Inventory/Display
+    featuredLimit: { type: Number, default: 6 },
+
+    // 5. System & Security
+    adminNotifications: { type: Boolean, default: true },
+    maintenanceMode: { type: Boolean, default: false },
+  },
+  { 
+    timestamps: true,
+    // This ensures that if you add new fields later, they aren't stripped by Mongoose
+    strict: true 
+  },
+);
+
+// Prevent re-compilation of the model during Next.js Hot Reloads
+const Settings = mongoose.models.Settings || mongoose.model("Settings", SettingsSchema);
+
+export default Settings;
