@@ -8,16 +8,15 @@ import {
   Calendar,
   Loader2,
   Package,
-  CheckCircle2,
-  XCircle,
-  TrendingDown,
   Power,
   PowerOff,
   Pencil,
+  Search,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,6 +52,7 @@ interface AdminDealListProps {
 export default function AdminDealList({ onEdit }: AdminDealListProps) {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const formatDate = (dateObj: any) => {
     const dateStr = dateObj?.$date || dateObj;
@@ -60,7 +60,6 @@ export default function AdminDealList({ onEdit }: AdminDealListProps) {
     return new Date(dateStr).toLocaleDateString("en-PK", {
       day: "numeric",
       month: "short",
-      year: "numeric",
     });
   };
 
@@ -83,8 +82,8 @@ export default function AdminDealList({ onEdit }: AdminDealListProps) {
       if (data.success) {
         setDeals(
           deals.map((d) =>
-            d._id === id ? { ...d, isAvailable: !currentStatus } : d
-          )
+            d._id === id ? { ...d, isAvailable: !currentStatus } : d,
+          ),
         );
         toast.success(`Deal is now ${!currentStatus ? "Live" : "Hidden"}`);
       }
@@ -107,162 +106,177 @@ export default function AdminDealList({ onEdit }: AdminDealListProps) {
     fetchDeals();
   }, []);
 
+  const filteredDeals = deals.filter((deal) =>
+    deal.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center text-[#EFA765]">
-        <Loader2 className="animate-spin h-10 w-10" />
+      <div className="flex h-[600px] items-center justify-center text-[#EFA765]">
+        <Loader2 className="animate-spin h-8 w-8" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#141F2D] p-3 sm:p-8 text-white">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-white/10 pb-6 gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-4xl font-black text-[#EFA765] uppercase tracking-tighter">
-              Deal Management
-            </h1>
-            <p className="text-white/50 text-xs sm:text-sm mt-1">
-              Review and manage your live restaurant offers
-            </p>
-          </div>
-          <Badge className="bg-[#EFA765] text-[#141F2D] hover:bg-[#EFA765] px-3 py-1 text-sm font-bold">
-            {deals.length} Total
+    <div className="flex flex-col h-full max-h-[90vh] lg:max-h-[1100px]">
+      {/* Internal Header */}
+      <div className="p-6 border-b border-[#EFA765]/10 space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-black text-white tracking-tighter uppercase italic">
+            Live <span className="text-[#EFA765]">Inventory</span>
+          </h2>
+          <Badge className="bg-[#EFA765] text-[#141F2D] font-black rounded-md">
+            {deals.length}
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
-          {deals.map((deal) => (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+          <Input
+            placeholder="Search deals..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-[#141F2D] border-white/5 pl-10 h-10 text-xs focus:border-[#EFA765]/50 transition-all rounded-lg"
+          />
+        </div>
+      </div>
+
+      {/* Scrollable Container */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+        {filteredDeals.length === 0 ? (
+          <div className="text-center py-20 opacity-20">
+            <Package className="mx-auto h-12 w-12 mb-2" />
+            <p className="text-xs uppercase font-bold tracking-widest">
+              No Deals Found
+            </p>
+          </div>
+        ) : (
+          filteredDeals.map((deal) => (
             <Card
               key={deal._id}
-              className={`bg-[#1D2B3F] border-[#EFA765]/10 overflow-hidden hover:border-[#EFA765]/40 transition-all shadow-xl ${!deal.isAvailable && "opacity-70"}`}
+              className={`bg-[#141F2D]/50 border-white/5 overflow-hidden transition-all duration-300 group hover:border-[#EFA765]/30 ${!deal.isAvailable && "opacity-60 grayscale-[0.5]"}`}
             >
-              <CardContent className="p-0 flex flex-col lg:flex-row">
-                {/* Visual Sidebar */}
-                <div className="relative h-52 sm:h-64 lg:h-auto lg:w-72 shrink-0">
-                  <Image
-                    src={deal.image}
-                    alt={deal.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-3 left-3 flex flex-col gap-2">
-                    <Badge
-                      className={`${deal.isAvailable ? "bg-green-500" : "bg-red-500"} text-white border-none shadow-lg text-[10px]`}
-                    >
-                      {deal.isAvailable ? <CheckCircle2 className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
-                      {deal.isAvailable ? "Live" : "Inactive"}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Main Content */}
-                <div className="p-4 sm:p-6 grow flex flex-col justify-between min-w-0">
-                  <div className="min-w-0">
-                    <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2">
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[#EFA765] text-[10px] font-bold uppercase tracking-widest">
-                          {deal.category}
-                        </span>
-                        <h3 className="text-lg sm:text-2xl font-bold text-gray-300 truncate">{deal.title}</h3>
-                      </div>
-                      <div className="text-left sm:text-right w-full sm:w-auto shrink-0">
-                        <div className="flex items-center text-green-400 font-bold text-xs sm:justify-end">
-                          <TrendingDown className="w-4 h-4 mr-1" /> Save Rs. {deal.savings}
-                        </div>
-                        <p className="text-xl font-black text-[#EFA765]">
-                          Rs. {deal.dealPrice}
-                        </p>
-                      </div>
+              <CardContent className="p-0">
+                <div className="flex flex-col sm:flex-row">
+                  {/* Compact Image */}
+                  <div className="relative h-32 sm:h-auto sm:w-28 shrink-0 overflow-hidden">
+                    <Image
+                      src={deal.image}
+                      alt={deal.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute top-2 left-2">
+                      <div
+                        className={`h-2 w-2 rounded-full ${deal.isAvailable ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500"}`}
+                      />
                     </div>
+                  </div>
 
-                    <p className="text-white/80 text-xs line-clamp-2 mb-4 bg-white/5 p-3 rounded-lg border border-white/5 italic">
-                      {deal.description}
-                    </p>
+                  <div className="p-4 grow flex flex-col justify-between min-w-0">
+                    <div className="mb-3">
+                      <div className="flex justify-between items-start gap-2 mb-1">
+                        <h3 className="text-sm font-bold text-white truncate uppercase tracking-tight leading-none">
+                          {deal.title}
+                        </h3>
+                        <span className="text-[#EFA765] font-black text-sm shrink-0">
+                          Rs.{deal.dealPrice}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-white/40 line-clamp-1 italic mb-2">
+                        {deal.description}
+                      </p>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-                      {deal.items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-2 bg-[#141F2D] p-2 rounded-md border border-white/5"
-                        >
-                          <Package className="w-3 h-3 text-[#EFA765] shrink-0" />
-                          <span className="text-[10px] text-white/80 font-medium truncate">
+                      {/* Compact items list */}
+                      <div className="flex flex-wrap gap-1">
+                        {deal.items.slice(0, 3).map((item, idx) => (
+                          <span
+                            key={idx}
+                            className="text-[9px] bg-white/5 px-2 py-0.5 rounded border border-white/5 text-white/60"
+                          >
                             {item.quantity}x {item.name}
                           </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Footer Stats & Actions */}
-                  <div className="flex flex-col gap-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-wider text-white/40">
-                      <Calendar className="w-4 h-4 text-[#EFA765]" />
-                      <span>
-                        {formatDate(deal.startDate)} — {formatDate(deal.endDate)}
-                      </span>
-                    </div>
-
-                    {/* Action Buttons - Fixed for Mobile */}
-                    <div className="flex flex-wrap gap-2 w-full">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          onEdit(deal);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                        className="flex-1 min-w-[80px] text-[#EFA765] hover:text-[#EFA765]/80 text-xs bg-white/5 border-white/10"
-                      >
-                        <Pencil className="w-3 h-3 mr-1" /> Edit
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleStatus(deal._id, deal.isAvailable)}
-                        className={`flex-1 min-w-[100px] border-white/10 text-xs ${deal.isAvailable ? "text-amber-400" : "text-green-400"} bg-white/5`}
-                      >
-                        {deal.isAvailable ? (
-                          <><PowerOff className="w-3 h-3 mr-1" /> Off</>
-                        ) : (
-                          <><Power className="w-3 h-3 mr-1" /> Live</>
+                        ))}
+                        {deal.items.length > 3 && (
+                          <span className="text-[9px] text-white/30">
+                            +{deal.items.length - 3} more
+                          </span>
                         )}
-                      </Button>
+                      </div>
+                    </div>
 
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="flex-1 min-w-[80px] bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 text-xs"
-                          >
-                            <Trash2 className="w-3 h-3 mr-1" /> Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-[#1D2B3F] border-white/10 text-white w-[95vw] max-w-md rounded-2xl">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-[#EFA765]">Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription className="text-white/60">
-                              Permanently delete <strong>{deal.title}</strong>?
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter className="gap-2">
-                            <AlertDialogCancel className="bg-white/5 border-white/10 text-white mt-0">Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteDeal(deal._id)} className="bg-red-600">Delete</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                    <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase">
+                        <Calendar className="h-3 w-3 text-[#EFA765]" />
+                        {formatDate(deal.startDate)} -{" "}
+                        {formatDate(deal.endDate)}
+                      </div>
+
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onEdit(deal)}
+                          className="h-7 w-7 rounded-md hover:bg-[#EFA765] hover:text-[#141F2D] transition-colors"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            toggleStatus(deal._id, deal.isAvailable)
+                          }
+                          className={`h-7 w-7 rounded-md hover:bg-white/10 transition-colors ${deal.isAvailable ? "text-amber-500" : "text-green-500"}`}
+                        >
+                          {deal.isAvailable ? (
+                            <PowerOff className="h-3.5 w-3.5" />
+                          ) : (
+                            <Power className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 rounded-md text-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="bg-[#1D2B3F] border-[#EFA765]/20 text-white rounded-2xl">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove Deal?</AlertDialogTitle>
+                              <AlertDialogDescription className="text-white/50 text-xs">
+                                This action cannot be undone. This will
+                                permanently delete the deal from the system.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="bg-white/5 border-white/10 h-9 text-xs">
+                                Cancel
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteDeal(deal._id)}
+                                className="bg-red-600 h-9 text-xs"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          ))
+        )}
       </div>
     </div>
   );

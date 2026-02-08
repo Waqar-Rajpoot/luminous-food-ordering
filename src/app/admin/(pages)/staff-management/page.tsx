@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Package, LayoutDashboard, Zap, ShoppingBag, MapPin, Hash, CreditCard, Coins, Phone, ExternalLink, Wallet } from "lucide-react";
+import { Users, Package, LayoutDashboard, Zap, ShoppingBag, MapPin, Hash, CreditCard, Coins, Phone, ExternalLink, Wallet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { 
@@ -88,6 +88,15 @@ export default function StaffManagementPage() {
       toast.error("Process failed. Please try again.");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center h-[80vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-[#efa765]" />
+        <p className="mt-4 text-slate-400 font-medium tracking-widest uppercase text-[10px]">Syncing staff & orders data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#141F2D] p-4 sm:p-6 md:p-8 text-[#EFA765] font-sans selection:bg-[#EFA765]/20">
@@ -186,13 +195,13 @@ export default function StaffManagementPage() {
                               {order.finalAmount.toLocaleString()}
                             </span>
                             {order.paymentMethod === 'cod' ? (
-                               <span className="text-[9px] font-bold text-amber-500 flex items-center gap-1 uppercase">
-                                 <Coins size={10} /> COD
-                               </span>
+                              <span className="text-[9px] font-bold text-amber-500 flex items-center gap-1 uppercase">
+                                <Coins size={10} /> COD
+                              </span>
                             ) : (
-                               <span className="text-[9px] font-bold text-blue-400 flex items-center gap-1 uppercase">
-                                 <CreditCard size={10} /> Paid
-                               </span>
+                              <span className="text-[9px] font-bold text-blue-400 flex items-center gap-1 uppercase">
+                                <CreditCard size={10} /> Paid
+                              </span>
                             )}
                           </div>
                         </TableCell>

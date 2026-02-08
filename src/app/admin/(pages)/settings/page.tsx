@@ -4,6 +4,7 @@ import {
   Save, Store, Truck, CreditCard, 
   AlertCircle, ShieldCheck, Activity, Timer, Zap,
   Gift, Landmark, ShieldAlert, Globe,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -87,12 +88,17 @@ export default function SettingsPage() {
     );
   };
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#141F2D] flex flex-col items-center justify-center space-y-4">
-      <div className="w-16 h-16 border-4 border-[#EFA765]/10 border-t-[#EFA765] rounded-full animate-spin shadow-[0_0_20px_rgba(239,167,101,0.2)]" />
-      <p className="text-[#EFA765] text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Synchronizing Terminal...</p>
-    </div>
-  );
+  function LoadingSpinner() {
+    return (
+      <div className="flex flex-col justify-center items-center h-[80vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-[#efa765]" />
+        <p className="mt-4 text-slate-400 font-medium tracking-widest uppercase text-[10px]">Syncing settings Data...</p>
+      </div>
+    );
+  }
+
+  if (loading) return <LoadingSpinner />;
+
 
   return (
     <div className="min-h-screen bg-[#141F2D] p-4 sm:p-6 md:p-10 text-[#EFA765] font-sans selection:bg-[#EFA765]/20 pb-32 md:pb-8">
@@ -134,7 +140,6 @@ export default function SettingsPage() {
             <TabsList className="bg-[#1D2B3F]/90 backdrop-blur-xl border border-[#EFA765]/20 p-1.5 rounded-2xl md:rounded-[2rem] mb-6 md:mb-12 flex flex-wrap w-full md:w-fit justify-center gap-1.5 h-auto overflow-hidden">
               {[
                 { id: 'ops', icon: Store, label: 'Options' },
-                { id: 'logistics', icon: Truck, label: 'Logistics' },
                 { id: 'finance', icon: CreditCard, label: 'Finance' },
                 { id: 'system', icon: ShieldAlert, label: 'Security' },
               ].map((tab) => (
@@ -207,39 +212,6 @@ export default function SettingsPage() {
               </div>
             </div>
           </TabsContent>
-
-          {/* 2. LOGISTICS */}
-          <TabsContent value="logistics" className="space-y-6 outline-none animate-in fade-in slide-in-from-bottom-5">
-            <div className="bg-[#1D2B3F] p-6 md:p-12 rounded-[2rem] border border-[#EFA765]/20 shadow-xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-              <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#EFA765]">Delivery Perimeter</label>
-                  <div className="relative group">
-                    <Input 
-                      type="number" 
-                      value={config.deliveryRadius} 
-                      onChange={(e) => setConfig({...config, deliveryRadius: Number(e.target.value)})} 
-                      className="h-20 bg-[#141F2D] border-[#EFA765]/10 rounded-2xl text-white text-4xl font-black focus:border-[#EFA765]/50 pr-20" 
-                    />
-                    <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black italic text-[#EFA765]/30 text-xl">KM</span>
-                  </div>
-                  <ErrorMessage field="deliveryRadius" />
-              </div>
-
-              <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#EFA765]">ETA Logic</label>
-                  <div className="relative group">
-                    <Input 
-                      value={config.estimatedDeliveryTime} 
-                      onChange={(e) => setConfig({...config, estimatedDeliveryTime: e.target.value})} 
-                      className="h-20 bg-[#141F2D] border-[#EFA765]/10 rounded-2xl text-white text-xl font-black focus:border-[#EFA765]/50" 
-                    />
-                    <Activity className="absolute right-6 top-1/2 -translate-y-1/2 text-white/10 w-6 h-6" />
-                  </div>
-                  <ErrorMessage field="estimatedDeliveryTime" />
-               </div>
-            </div>
-          </TabsContent>
-
           {/* 3. FINANCE */}
           <TabsContent value="finance" className="space-y-4 md:space-y-8 outline-none animate-in fade-in slide-in-from-bottom-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

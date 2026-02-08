@@ -165,7 +165,7 @@ export default function AdminMessagesPage() {
         <div className="bg-[#141f2d] rounded-xl shadow-2xl border border-[#efa765]/30 overflow-hidden mb-10">
           <div className="p-4 border-b border-gray-800 bg-[#1c2a3b]/30">
             <h2 className="text-lg md:text-2xl font-semibold text-[#efa765] yeseva-one">
-               Recent Messages
+              Recent Messages
             </h2>
           </div>
 

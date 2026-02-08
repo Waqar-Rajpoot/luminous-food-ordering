@@ -182,7 +182,7 @@ export default function ProductsPage() {
                       <div className="absolute top-4 left-4 md:top-6 md:left-6 bg-[#141F2D]/80 backdrop-blur-xl border border-white/10 px-3 py-1.5 md:px-4 md:py-2 rounded-xl md:rounded-2xl flex items-center gap-2">
                         <Star className="h-3 w-3 fill-[#EFA765] text-[#EFA765]" />
                         <span className="text-[10px] md:text-[11px] font-black">{product.averageRating}</span>
-                        <span className="text-[8px] md:text-[9px] text-white/40 font-bold">({product.reviewCount})</span>
+                        <span className="text-[8px] md:text-[9px] text-white/80 font-bold">Reviews ({product.reviewCount})</span>
                       </div>
 
                       {/* Add Button for Desktop (Hover) */}

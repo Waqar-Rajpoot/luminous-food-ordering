@@ -29,6 +29,7 @@ import {
   Truck,
   Zap,
   CurrencyIcon,
+  Loader2,
 } from "lucide-react";
 
 interface OrderItem {
@@ -832,7 +833,7 @@ const OrderPage = () => {
   // --- MAIN RENDER ---
   return (
     <>
-      <div className="min-h-screen bg-[#141F2D] p-4 sm:pt-10 text-[#EFA765] font-sans p-4 sm:p-6 md:p-10">
+      <div className="min-h-screen bg-[#141F2D] p-4 sm:pt-10 text-[#EFA765] font-sans sm:p-6 md:p-10">
         {/* TOP HEADER */}
         <div className="mb-8 border-b border-[#EFA765]/20 pb-4">
           <ManagementHeader fetchOrders={fetchOrders} />
@@ -840,10 +841,10 @@ const OrderPage = () => {
 
         {/* LOADING STATE */}
         {loading ? (
-          <div className="flex justify-center text-white items-center h-96 text-lg">
-            <RefreshCcw className="h-6 w-6 mr-3 animate-spin text-[#EFA765]" />
-            <p>Fetching real-time data...</p>
-          </div>
+           <div className="flex flex-col justify-center items-center h-[80vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-[#efa765]" />
+        <p className="mt-4 text-slate-400 font-medium tracking-widest uppercase text-[10px]">Syncing Orders Data...</p>
+      </div>
         ) : (
           // GRID LAYOUT FOR METRICS AND TABLES
           <div className="grid grid-cols-12 gap-6">
