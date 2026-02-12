@@ -5,7 +5,7 @@ import UserModel from "@/models/User.model";
 
 export const sendVerificationEmail = async (
     email: string, 
-    emailType: "VERIFY" | "RESET",
+    emailType: "VERIFY" | "RESET" | "2FA",
     username: string, 
     verifyCode: string
 ) => {

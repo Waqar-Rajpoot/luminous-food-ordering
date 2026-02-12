@@ -14,7 +14,7 @@ import {
 interface VerificationEmailProps {
   username: string;
   otp: string;
-  emailType: "VERIFY" | "RESET";
+  emailType: "VERIFY" | "RESET" | "2FA";
 }
 
 export default function VerificationEmail({ username, otp, emailType }: VerificationEmailProps) {

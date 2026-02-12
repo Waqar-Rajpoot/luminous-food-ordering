@@ -20,9 +20,6 @@
 //             const reviews = await ReviewModel.countDocuments();
 //             const products = await ProductModel.countDocuments();
 //             const orders = await Order.countDocuments();
-
-//             // console.log("Reviews:", reviews,"Products: ", products,"Bookings:", bookings,"Orders:", orders)
-
 //             return NextResponse.json({success: true, data: {reviews, products, orders}}, {status: 200});
 
 //     } catch (error: any) {

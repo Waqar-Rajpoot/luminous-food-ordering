@@ -1,17 +1,21 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface User extends Document {
-  name?: string;
+  name: string; // Changed to required for receipts
   username: string;
   email: string;
-  imageURL?: string;
   password: string;
   role: string;
+  twoFactorEnabled: boolean;
   isVerified: boolean;
+  resendCount: number;
+  firstResendAt: Date | null;
   verifyCode: string;
   verifyCodeExpire: Date;
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const UserSchema: Schema<User> = new Schema(
@@ -42,6 +46,10 @@ const UserSchema: Schema<User> = new Schema(
       type: String,
       required: [true, "Password is required"],
     },
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
     role: {
       type: String,
       enum: ["user", "admin", "staff"],
@@ -51,6 +59,8 @@ const UserSchema: Schema<User> = new Schema(
       type: Boolean,
       default: false,
     },
+    resendCount: { type: Number, default: 0 },
+    firstResendAt: { type: Date, default: null },
     verifyCode: {
       type: String,
       required: [true, "Verification code is required"],

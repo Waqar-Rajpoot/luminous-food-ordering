@@ -3,7 +3,7 @@ import { verifySchema } from "@/schemas/verifySchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -11,7 +11,6 @@ import * as z from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,7 +24,7 @@ import {
   InputOTPSlot,
   InputOTPSeparator,
 } from "@/components/ui/input-otp";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck, RotateCcw } from "lucide-react";
 import { ApiError } from "next/dist/server/api-utils";
 
 const VerifyAccount = () => {
@@ -34,12 +33,54 @@ const VerifyAccount = () => {
   const searchParams = useSearchParams();
   const emailType = searchParams.get("emailType");
 
+  // States for Resend Logic
+  const [isResending, setIsResending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [remainingTries, setRemainingTries] = useState<number | null>(null);
+
   const form = useForm<z.infer<typeof verifySchema>>({
     resolver: zodResolver(verifySchema),
     defaultValues: {
       code: "",
     },
   });
+
+  // Handle Countdown Timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const onResendCode = async () => {
+    if (countdown > 0 || remainingTries === 0) return;
+
+    setIsResending(true);
+    try {
+      const response = await axios.post("/api/resend-code", {
+        username: params.username,
+        emailType,
+      });
+
+      toast.success(response.data.message);
+      setRemainingTries(response.data.remainingTries);
+      setCountdown(60); // Start 60s cooldown
+    } catch (error: any) {
+      const axiosError = error as AxiosError<ApiError>;
+      toast.error(axiosError.response?.data?.message || "Failed to resend code");
+      
+      // If server returns tries, sync them
+      // if (axiosError.response?.data?.remainingTries !== undefined) {
+      //   setRemainingTries(axiosError.response.data.remainingTries as number);
+      // }
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const onSubmit = async (data: z.infer<typeof verifySchema>) => {
     try {
@@ -50,7 +91,7 @@ const VerifyAccount = () => {
       });
 
       toast.success(response.data.message);
-      if (emailType === 'RESET') {
+      if (emailType === "RESET") {
         router.replace(`/reset-password?username=${params.username}&code=${data.code}`);
       } else {
         router.replace("/sign-in");
@@ -58,15 +99,13 @@ const VerifyAccount = () => {
     } catch (error) {
       const axiosError = error as AxiosError<ApiError>;
       toast.error(
-        axiosError.response?.data?.message ??
-          "An error occurred while verifying account."
+        axiosError.response?.data?.message ?? "An error occurred while verifying account."
       );
     }
   };
 
   return (
     <div className="min-h-screen bg-[#141F2D] flex items-center justify-center p-4">
-      {/* Container matching your Card and Form styles */}
       <div className="w-full max-w-md bg-[#1D2B3F] p-8 rounded-[2rem] shadow-2xl border border-[#EFA765]/20">
         
         {/* Header Section */}
@@ -96,7 +135,6 @@ const VerifyAccount = () => {
                   <FormControl>
                     <InputOTP maxLength={6} {...field}>
                       <InputOTPGroup className="gap-2 sm:gap-3">
-                        {/* Custom slots to match your dark theme */}
                         {[0, 1, 2, 3, 4, 5].map((index) => (
                           <React.Fragment key={index}>
                             <InputOTPSlot
@@ -111,28 +149,53 @@ const VerifyAccount = () => {
                       </InputOTPGroup>
                     </InputOTP>
                   </FormControl>
-                  <FormDescription className="text-[10px] uppercase font-bold text-white/30 tracking-widest mt-6">
-                    Enter the code from your inbox
-                  </FormDescription>
                   <FormMessage className="text-red-400 font-bold text-xs mt-2" />
                 </FormItem>
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full bg-[#EFA765] text-[#141F2D] hover:bg-white h-14 rounded-2xl text-lg font-black transition-all active:scale-95 shadow-xl shadow-[#EFA765]/10"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" /> 
-                  <span className="tracking-widest">VERIFYING...</span>
-                </>
-              ) : (
-                "VERIFY ACCOUNT"
-              )}
-            </Button>
+            <div className="space-y-4">
+              <Button
+                type="submit"
+                className="w-full bg-[#EFA765] text-[#141F2D] hover:bg-white h-14 rounded-2xl text-lg font-black transition-all active:scale-95 shadow-xl shadow-[#EFA765]/10"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> 
+                    <span className="tracking-widest">VERIFYING...</span>
+                  </>
+                ) : (
+                  "VERIFY ACCOUNT"
+                )}
+              </Button>
+
+              {/* Resend Section */}
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onResendCode}
+                  disabled={countdown > 0 || isResending || remainingTries === 0}
+                  className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-[#EFA765] hover:text-white transition-colors disabled:text-slate-600 disabled:cursor-not-allowed"
+                >
+                  {isResending ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <RotateCcw className="h-3 w-3" />
+                  )}
+                  {countdown > 0 ? `Resend Code in ${countdown}s` : "Resend New Code"}
+                </button>
+
+                {/* Attempt Tracker */}
+                {remainingTries !== null && (
+                  <p className="text-[12px] font-bold uppercase tracking-tighter text-red-400">
+                    {remainingTries > 0 
+                      ? `Attempts  remaining: ${remainingTries}` 
+                      : "Daily limit reached. Try again in 24h."}
+                  </p>
+                )}
+              </div>
+            </div>
           </form>
         </Form>
       </div>

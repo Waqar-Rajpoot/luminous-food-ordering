@@ -59,7 +59,7 @@ export default async function DashboardPage({ params }: PageProps) {
       recentOrders: allOrders.slice(0, 5),
       reviews,
       messages,
-      activeTaskCount // Pass count to UI
+      activeTaskCount
     }));
 
   } catch (error) {
@@ -72,13 +72,13 @@ export default async function DashboardPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-slate-200 font-sans">
+    <div className="min-h-screen bg-[#0F172A] text-slate-200 font-sans -mt-5">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[#EFA765]/5 blur-[120px] rounded-full" />
         <div className="absolute top-[20%] -right-[5%] w-[30%] h-[30%] bg-blue-500/5 blur-[100px] rounded-full" />
       </div>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
         
         {/* --- STAFF SWITCHER BANNER --- */}
         {data.user.role === 'staff' && (

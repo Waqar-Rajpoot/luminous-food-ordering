@@ -6,13 +6,15 @@ import {
   Loader2, DollarSign, TrendingUp,
   AlertCircle, Zap,
   ListOrdered, Tag, 
-  MessageSquare, Settings
+  MessageSquare, Settings, FileText, Download
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import UserProfile from "@/components/user-dashboard/UserProfile";
 import Link from "next/link";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -44,13 +46,47 @@ export default function AdminDashboard() {
     fetchStats();
   }, []);
 
+  // NEW: PDF Generation Function
+  const generateReport = (type: "Daily" | "Weekly" | "Monthly") => {
+    const doc = new jsPDF();
+    const date = new Date().toLocaleDateString();
+
+    // PDF Header
+    doc.setFontSize(20);
+    doc.setTextColor(239, 167, 101); // Your Brand Color #efa765
+    doc.text(`${type} Performance Report`, 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${date}`, 14, 30);
+    doc.text(`Admin: ${session?.user?.name || 'Authorized Admin'}`, 14, 35);
+
+    // Summary Table
+    autoTable(doc, {
+      startY: 45,
+      head: [['Metric', 'Value']],
+      body: [
+        ['Total Revenue', `Rs. ${stats?.financials?.totalRevenue}`],
+        ['Total Sales', stats?.highlights?.totalSales],
+        ['Store Rating', `${stats?.highlights?.storeRating} / 5`],
+        ['Top Product', stats?.highlights?.topProduct],
+        ['Active Deals', stats?.counts?.deals],
+        ['Pending Orders', stats?.status?.pending],
+        ['Total Products', stats?.counts?.products],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [239, 167, 101] }
+    });
+
+    doc.save(`${type}_Report_${date}.pdf`);
+  };
+
   if (isLoading) return <LoadingSpinner />;
 
   return (
     <div className="min-h-screen text-slate-100 p-4 sm:p-6 lg:px-12">
       <div className="max-w-7xl mx-auto">
         
-        {/* Top Branding & Profile - Responsive flex and text sizes */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 border-b border-white/10 pb-6 md:pb-8 gap-6">
           <div className="w-full md:w-auto flex flex-col justify-center md:justify-center">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold yeseva-one tracking-tight">
@@ -65,7 +101,26 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Financial Stats - 1 col on mobile, 2 on tablet, 4 on desktop */}
+        {/* NEW: Report Download Section */}
+        <div className="mb-10 bg-white/5 border border-white/10 p-6 rounded-2xl">
+          <div className="flex items-center gap-3 mb-6">
+            <FileText className="text-[#efa765]" size={20} />
+            <h2 className="text-xl font-bold yeseva-one tracking-wide">Generate Reports</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {["Daily", "Weekly", "Monthly"].map((type: any) => (
+              <button
+                key={type}
+                onClick={() => generateReport(type)}
+                className="flex items-center justify-center gap-3 bg-white/5 hover:bg-[#efa765] hover:text-[#141F2D] border border-white/10 py-4 rounded-xl transition-all font-bold varela-round group"
+              >
+                <Download size={18} className="group-hover:animate-bounce" />
+                Download {type}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 md:mb-12">
           <StatCard title="Total Revenue" value={`Rs. ${stats?.financials?.totalRevenue}`} icon={<DollarSign className="text-emerald-400"/>} desc="From paid orders" />
           <StatCard title="Avg Rating" value={`${stats?.highlights?.storeRating} / 5`} icon={<Star className="text-yellow-400"/>} desc={`Across ${stats?.counts?.reviews} reviews`} />
@@ -73,14 +128,12 @@ export default function AdminDashboard() {
           <StatCard title="Active Deals" value={stats?.counts?.deals} icon={<Zap className="text-[#efa765]"/>} desc="Live on store" />
         </div>
 
-        {/* Action Required Section - Stacked on mobile */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 md:mb-12">
            <AlertBox count={stats?.status?.pending} label="Pending Orders" color="text-orange-400" />
            <AlertBox count={stats?.status?.pendingReviews} label="New Reviews" color="text-blue-400" />
            <AlertBox count={stats?.status?.canceled} label="Canceled Orders" color="text-red-400" />
         </div>
 
-        {/* Management Links Section */}
         <h2 className="text-xl sm:text-2xl font-bold yeseva-one text-[#efa765] mb-6 md:mb-8">Management Links</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {adminPages.map((page, index) => (

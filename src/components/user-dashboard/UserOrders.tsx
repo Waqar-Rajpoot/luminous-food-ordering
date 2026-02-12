@@ -96,7 +96,7 @@ export const UserOrders = ({ recentOrders }: any) => {
 
                   {/* Center: OTP Visualization (Only for non-finished orders) */}
                   {!isDelivered && !isCanceled && (
-                    <div className="bg-gradient-to-b from-[#EFA765]/10 to-transparent border border-[#EFA765]/20 p-3 rounded-2xl min-w-[120px] text-center">
+                    <div className="bg-linear-to-b from-[#EFA765]/10 to-transparent border border-[#EFA765]/20 p-3 rounded-2xl min-w-[120px] text-center">
                       <p className="text-[9px] uppercase text-[#EFA765] font-black tracking-tighter mb-1">Security Token</p>
                       <p className="text-xl font-black tracking-[0.2em] text-[#EFA765] drop-shadow-[0_0_10px_rgba(239,167,101,0.3)]">
                         {order.deliveryOTP || '----'}
