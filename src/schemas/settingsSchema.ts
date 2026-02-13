@@ -7,15 +7,18 @@ export const settingsSchema = z.object({
   
   // Logistics
   estimatedDeliveryTime: z.string().min(1, "Delivery time is required"),
-  deliveryRadius: z.number().min(0, "Radius cannot be negative"), // Changed from min(1) to min(0) to allow 0
-  
+  deliveryRadius: z.number().min(0, "Radius cannot be negative"),
+  restaurantLocation: z.object({
+    address: z.string().min(1, "Address is required"),
+    lat: z.number(),
+    lng: z.number(),
+  }),
   // Thresholds & Limits
   minOrderValue: z.number().min(0, "Cannot be negative"),
   featuredLimit: z.number().int().min(1, "At least 1 item").max(50, "Limit exceeded"),
   
   // Financials
   staffCommission: z.number().min(0, "Commission cannot be negative"),
-  taxPercentage: z.number().min(0).max(100, "Tax must be between 0 and 100"),
   globalDiscount: z.number().min(0).max(100, "Discount must be between 0 and 100"),
   
   // Nested Objects
@@ -34,5 +37,4 @@ export const settingsSchema = z.object({
   }),
 });
 
-// Optional: Export a type based on the schema for your frontend/backend
 export type SettingsInput = z.infer<typeof settingsSchema>;

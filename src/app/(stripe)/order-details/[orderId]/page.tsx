@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order.model";
 import ReviewModel from "@/models/Review.model";
+import Setting from "@/models/Settings.model";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,9 @@ import {
   MapPin,
   QrCode,
   Tag,
+  Navigation,
+  ExternalLink,
+  Store
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -38,8 +42,13 @@ const getBadgeStyles = (status: string) => {
 
 async function getOrderData(orderId: string) {
   await dbConnect();
+  
+  // 1. Fetch Order
   const orderDoc: any = await Order.findOne({ orderId }).lean();
   if (!orderDoc) return null;
+
+  // 2. Fetch Restaurant Settings for coordinates
+  const settingsDoc: any = await Setting.findOne({}).lean();
 
   const order = {
     ...orderDoc,
@@ -59,7 +68,15 @@ async function getOrderData(orderId: string) {
     rev.productId.toString()
   );
 
-  return { order, reviewedProductIds };
+  return { 
+    order, 
+    reviewedProductIds,
+    restaurantLocation: {
+        lat: settingsDoc?.lat || 30.6622, // Default fallback
+        lng: settingsDoc?.lng || 73.1087,
+        name: settingsDoc?.restaurantName || "Our Restaurant"
+    }
+  };
 }
 
 export default async function OrderDetailsPage({ params }: any) {
@@ -67,7 +84,7 @@ export default async function OrderDetailsPage({ params }: any) {
   const data = await getOrderData(orderId);
   if (!data) notFound();
 
-  const { order, reviewedProductIds } = data;
+  const { order, reviewedProductIds, restaurantLocation } = data;
   const addr = order.shippingAddress;
 
   const isEligibleForVerification = order.orderStatus === "paid" || order.paymentMethod === "cod";
@@ -76,6 +93,11 @@ export default async function OrderDetailsPage({ params }: any) {
     id: order.orderId,
     otp: order.deliveryOTP
   });
+
+  // Construction of Google Maps Directions URL (Origin: Restaurant -> Destination: Customer)
+  const directionsUrl = (addr.lat && addr.lng) 
+    ? `https://www.google.com/maps/dir/?api=1&origin=${restaurantLocation.lat},${restaurantLocation.lng}&destination=${addr.lat},${addr.lng}&travelmode=driving`
+    : null;
 
   return (
     <div className="min-h-screen bg-[#141F2D] p-3 md:p-8 text-[#EFA765] font-sans">
@@ -90,7 +112,7 @@ export default async function OrderDetailsPage({ params }: any) {
         <CardContent className="space-y-6 px-0 md:px-6">
           <Separator className="bg-[#EFA765]/30 my-2 md:my-4" />
 
-          {/* OTP & QR VERIFICATION SECTION (Keep functionality) */}
+          {/* OTP & QR VERIFICATION SECTION */}
           {isEligibleForVerification && (
             <div className="bg-[#EFA765]/5 border-2 border-dashed border-[#EFA765]/30 rounded-2xl md:rounded-3xl p-4 md:p-6 mb-4 md:mb-8 text-center">
               <div className="flex flex-col items-center justify-center space-y-4">
@@ -154,13 +176,32 @@ export default async function OrderDetailsPage({ params }: any) {
                </div>
              </div>
 
-             <div className="space-y-2 bg-[#141F2D]/30 p-4 rounded-xl md:p-0 md:bg-transparent sm:col-span-2 md:col-span-1">
-               <h3 className="text-lg md:text-xl font-bold flex items-center text-[#EFA765]"><MapPin className="mr-2 h-5 w-5" /> Address</h3>
-               <div className="text-white/60 space-y-1 text-sm">
+             {/* Connection Section: Address & Map Tracking */}
+             <div className="space-y-3 bg-[#141F2D]/30 p-4 rounded-xl md:p-0 md:bg-transparent sm:col-span-2 md:col-span-1">
+               <h3 className="text-lg md:text-xl font-bold flex items-center text-[#EFA765]"><MapPin className="mr-2 h-5 w-5" /> Delivery Address</h3>
+               <div className="text-white/60 space-y-1 text-sm mb-4">
                  <p className="font-semibold text-gray-200">{addr.fullName}</p>
-                 <p>{addr.addressLine1}</p>
-                 <p>{addr.city}, {addr.state} {addr.postalCode}</p>
+                 <p className="leading-tight">{addr.addressLine1}, {addr.city}</p>
+                 <p className="text-[10px] text-[#EFA765]/50 flex items-center gap-1 uppercase">
+                    <Store size={10} /> From: {restaurantLocation.name}
+                 </p>
                </div>
+               
+               {directionsUrl && (
+                 <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="block w-full">
+                   <Button className="w-full bg-[#EFA765] hover:bg-[#EFA765]/90 text-[#141F2D] rounded-xl py-7 transition-all group shadow-lg shadow-[#EFA765]/10">
+                     <div className="flex flex-col items-center">
+                        <span className="flex items-center gap-2 font-black uppercase text-xs italic">
+                          <Navigation className="h-4 w-4 fill-current group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                          Track Order Route
+                        </span>
+                        <span className="text-[9px] font-bold opacity-70 mt-1 uppercase tracking-widest flex items-center gap-1">
+                          Restaurant <Separator className="w-4 bg-[#141F2D]/30" /> Customer <ExternalLink size={8} />
+                        </span>
+                     </div>
+                   </Button>
+                 </a>
+               )}
              </div>
           </div>
 
@@ -207,7 +248,7 @@ export default async function OrderDetailsPage({ params }: any) {
             </div>
           </div>
 
-          {/* UPDATED: Detailed Financial Section */}
+          {/* Financial Section */}
           <div className="space-y-3 pt-6 border-t border-[#EFA765]/30">
             <div className="flex justify-between items-center text-sm md:text-base">
               <span className="text-white/50 uppercase font-bold tracking-tighter">Subtotal</span>

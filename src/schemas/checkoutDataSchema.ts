@@ -16,6 +16,8 @@ export const checkoutDataSchema = z.object({
     city: z.string(),
     state: z.string(),
     postalCode: z.string(),
+    lat: z.number(),
+    lng: z.number(),
     country: z.string(),
     phoneNumber: z.string(),
   }),

@@ -9,6 +9,19 @@ import { authOptions } from "../auth/[...nextauth]/options";
 import mongoose from "mongoose";
 import { checkoutDataSchema } from "@/schemas/checkoutDataSchema";
 
+// Distance Helper (Haversine Formula)
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10; // Result in km rounded to 1 decimal
+}
+
 const key = process.env.STRIPE_SECRET_KEY || "";
 const stripe = new Stripe(key, {
   apiVersion: "2025-12-15.clover" as any,
@@ -22,62 +35,56 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const session = await getServerSession(authOptions);
 
-    // 1. AUTHENTICATION CHECK
     if (!session || !session.user || !session.user._id) {
-      return NextResponse.json(
-        { message: "Authentication required to place an order." },
-        { status: 401 },
-      );
+      return NextResponse.json({ message: "Authentication required." }, { status: 401 });
     }
 
-    // 2. FETCH CORE SETTINGS
     const settings = await Settings.findOne().lean();
 
-    // 3. GLOBAL MAINTENANCE CHECK
     if (settings?.maintenanceMode) {
-      return NextResponse.json(
-        { message: "System is undergoing scheduled maintenance." },
-        { status: 503 },
-      );
+      return NextResponse.json({ message: "System under maintenance." }, { status: 503 });
     }
 
     const parsedData = checkoutDataSchema.safeParse(body);
     if (!parsedData.success) {
-      return NextResponse.json(
-        { message: "Invalid data format." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "Invalid data format." }, { status: 400 });
     }
 
     const { cartItems, shippingAddress, shippingRate, paymentMethod } = parsedData.data as any;
 
-    // --- NEW FINANCIAL CALCULATION LOGIC ---
-    
-    // A. Calculate Raw Total (Subtotal)
-    const totalAmount = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+    console.log("Checkout Data:", { shippingAddress });
 
-    // B. Calculate Discount (Global)
+    // --- NEW ADDRESS & RADIUS VALIDATION ---
+    if (!shippingAddress.lat || !shippingAddress.lng) {
+      return NextResponse.json({ message: "GPS coordinates are required for delivery." }, { status: 400 });
+    }
+
+    if (settings?.restaurantLocation?.lat && settings?.restaurantLocation?.lng) {
+      const distance = calculateDistance(
+        settings.restaurantLocation.lat,
+        settings.restaurantLocation.lng,
+        shippingAddress.lat,
+        shippingAddress.lng
+      );
+
+      if (distance > (settings.deliveryRadius || 10)) {
+        return NextResponse.json({ 
+          message: `Delivery failed. Your location is ${distance}km away, which exceeds our ${settings.deliveryRadius}km limit.` 
+        }, { status: 400 });
+      }
+    }
+
+    // --- FINANCIAL CALCULATIONS ---
+    const totalAmount = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
     const discountPercent = settings?.globalDiscount || 0;
     const discountAmount = (totalAmount * discountPercent) / 100;
-    
-    // C. Calculate Final Amount (Before Shipping)
     const finalAmountAfterDiscount = totalAmount - discountAmount;
-
-    // D. Calculate Rider Bounty (deliveryEarning)
     const deliveryEarning = settings?.staffCommission || 0;
-
-    // E. Add Shipping Fee
     const shippingFee = Number(shippingRate) || 0;
     const finalBillableAmount = finalAmountAfterDiscount + shippingFee;
 
-    // --- VALIDATIONS ---
-
-    // Min Order Value check (using total before discount to be fair to user)
     if (settings && totalAmount < settings.minOrderValue) {
-      return NextResponse.json(
-        { message: `Minimum order requirement is PKR ${settings.minOrderValue}.` },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: `Minimum order is PKR ${settings.minOrderValue}.` }, { status: 400 });
     }
 
     if (paymentMethod === "stripe" && !settings?.paymentMethods?.stripe) {
@@ -88,8 +95,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "COD unavailable." }, { status: 403 });
     }
 
-    // --- PREPARE ORDER ---
-
+    // --- ORDER PREPARATION ---
     const generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = new Date();
     otpExpiry.setHours(otpExpiry.getHours() + 48);
@@ -102,16 +108,16 @@ export async function POST(request: NextRequest) {
       userId: userIdObjectId,
       customerEmail: session.user.email || "guest@example.com",
       customerName: session.user.name || shippingAddress.fullName,
-      totalAmount: totalAmount + shippingFee, // Original total + shipping
-      discountAmount: discountAmount,        // Calculated discount
-      finalAmount: finalBillableAmount,      // Amount user actually pays
-      deliveryEarning: deliveryEarning,      // Locked rider bounty
+      totalAmount: totalAmount + shippingFee,
+      discountAmount: discountAmount,
+      finalAmount: finalBillableAmount,
+      deliveryEarning: deliveryEarning,
       isEarningsPaid: false,
       shippingCost: shippingFee,
       currency: "pkr",
       orderStatus: "pending",
       items: cartItems,
-      shippingAddress: shippingAddress,
+      shippingAddress: shippingAddress, // Now includes lat/lng
       deliveryOTP: generatedOTP,
       deliveryOTPExpiry: otpExpiry,
       isOTPVerified: false,
@@ -120,31 +126,25 @@ export async function POST(request: NextRequest) {
 
     await newOrder.save();
 
-    // --- PAYMENT GATEWAY LOGIC ---
-
+    // --- GATEWAY LOGIC ---
     if (paymentMethod === "cod") {
       return NextResponse.json({
         success: true,
         orderId: newOrder.orderId,
-        message: "Order placed successfully via Cash on Delivery",
+        message: "Order placed successfully via COD",
       });
     }
 
-    // Stripe Line Items (Pro-rated for global discount)
-    // Note: Stripe doesn't easily support a "total discount" field on sessions without Coupons, 
-    // so we apply a discount factor to each item's price for accuracy.
     const discountFactor = (100 - discountPercent) / 100;
-
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = cartItems.map((item: any) => ({
       price_data: {
         currency: "pkr",
         product_data: { name: item.name, images: [item.image] },
-        unit_amount: Math.round((item.price * discountFactor) * 100), // Item price minus global discount
+        unit_amount: Math.round((item.price * discountFactor) * 100),
       },
       quantity: item.quantity,
     }));
 
-    // Add Shipping as a line item if exists
     if (shippingFee > 0) {
       line_items.push({
         price_data: {
@@ -169,9 +169,7 @@ export async function POST(request: NextRequest) {
       { idempotencyKey },
     );
 
-    await Order.findByIdAndUpdate(newOrder._id, {
-      stripeSessionId: sessionStripe.id,
-    });
+    await Order.findByIdAndUpdate(newOrder._id, { stripeSessionId: sessionStripe.id });
 
     return NextResponse.json({
       sessionId: sessionStripe.id,
@@ -181,9 +179,6 @@ export async function POST(request: NextRequest) {
 
   } catch (err: any) {
     console.error("Checkout Error:", err.message);
-    return NextResponse.json(
-      { message: err.message, success: false },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: err.message, success: false }, { status: 500 });
   }
 }

@@ -4,7 +4,8 @@ import {
   Save, Store, Truck, CreditCard, 
   AlertCircle, ShieldCheck, Activity, Timer, Zap,
   Gift, Landmark, ShieldAlert, Globe,
-  Loader2,
+  Loader2, MapPin, Navigation, Compass,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -22,7 +23,12 @@ export default function SettingsPage() {
     operatingHours: { open: "09:00", close: "23:00" },
     estimatedDeliveryTime: "30-45 mins",
     minOrderValue: 0,
-    deliveryRadius: 0,
+    deliveryRadius: 10,
+    restaurantLocation: {
+      address: "",
+      lat: 0,
+      lng: 0
+    },
     staffCommission: 0,
     paymentMethods: { stripe: true, cod: true },
     taxPercentage: 0,
@@ -99,7 +105,6 @@ export default function SettingsPage() {
 
   if (loading) return <LoadingSpinner />;
 
-
   return (
     <div className="min-h-screen bg-[#141F2D] p-4 sm:p-6 md:p-10 text-[#EFA765] font-sans selection:bg-[#EFA765]/20 pb-32 md:pb-8">
       <div className="max-w-7xl mx-auto space-y-6 md:space-y-10">
@@ -140,6 +145,7 @@ export default function SettingsPage() {
             <TabsList className="bg-[#1D2B3F]/90 backdrop-blur-xl border border-[#EFA765]/20 p-1.5 rounded-2xl md:rounded-[2rem] mb-6 md:mb-12 flex flex-wrap w-full md:w-fit justify-center gap-1.5 h-auto overflow-hidden">
               {[
                 { id: 'ops', icon: Store, label: 'Options' },
+                { id: 'logistics', icon: Truck, label: 'Logistics' },
                 { id: 'finance', icon: CreditCard, label: 'Finance' },
                 { id: 'system', icon: ShieldAlert, label: 'Security' },
               ].map((tab) => (
@@ -187,6 +193,21 @@ export default function SettingsPage() {
                 <ErrorMessage field="minOrderValue" />
               </div>
 
+              {/* Delivery Time Input Added Here */}
+              <div className="bg-[#1D2B3F] p-6 md:p-10 rounded-[2rem] border border-[#EFA765]/20 space-y-4 shadow-xl md:col-span-2">
+                <div className="flex items-center gap-3">
+                  <Clock className="text-[#EFA765] w-5 h-5" />
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#EFA765]">Est. Delivery Time</label>
+                </div>
+                <Input
+                  type="text"
+                  placeholder="e.g. 30-45 mins"
+                  value={config.estimatedDeliveryTime}
+                  onChange={(e) => setConfig({ ...config, estimatedDeliveryTime: e.target.value })}
+                  className="h-16 bg-[#141F2D] border-[#EFA765]/10 rounded-2xl text-white text-xl font-bold focus:border-[#EFA765]/50"
+                />
+              </div>
+
               <div className="bg-[#1D2B3F] p-6 md:p-10 rounded-[2.5rem] border border-[#EFA765]/20 space-y-8 md:col-span-2 shadow-xl">
                 <div className="flex items-center gap-3">
                   <Timer className="text-[#EFA765] w-5 h-5" />
@@ -212,6 +233,87 @@ export default function SettingsPage() {
               </div>
             </div>
           </TabsContent>
+
+          {/* 2. LOGISTICS (NEW TAB) */}
+          <TabsContent value="logistics" className="space-y-4 md:space-y-8 outline-none animate-in fade-in slide-in-from-bottom-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Radius Control */}
+              <div className="bg-[#1D2B3F] p-8 rounded-[2rem] border border-[#EFA765]/20 shadow-xl col-span-1">
+                <div className="flex items-center gap-4 mb-6">
+                  <Navigation className="text-[#EFA765] w-6 h-6" />
+                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[#EFA765]">Delivery Radius</label>
+                </div>
+                <div className="relative group">
+                  <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[#EFA765] font-black text-xs group-focus-within:text-white">KM</span>
+                  <Input 
+                    type="number" 
+                    value={config.deliveryRadius} 
+                    onChange={(e) => setConfig({...config, deliveryRadius: Number(e.target.value)})}
+                    className="h-20 bg-[#141F2D] border-[#EFA765]/10 text-5xl font-black text-white focus:border-[#EFA765] rounded-2xl w-full"
+                  />
+                </div>
+                <p className="mt-4 text-[9px] uppercase font-bold text-white/30 tracking-widest leading-relaxed">
+                  Maximum distance from restaurant allowed for delivery.
+                </p>
+              </div>
+
+              {/* Coordinates */}
+              <div className="bg-[#1D2B3F] p-8 rounded-[2rem] border border-[#EFA765]/20 shadow-xl md:col-span-2">
+                <div className="flex items-center gap-4 mb-6">
+                  <MapPin className="text-[#EFA765] w-6 h-6" />
+                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[#EFA765]">Store Coordinates</label>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black text-white/30 uppercase ml-1">Latitude</p>
+                    <Input 
+                      type="number" 
+                      step="any"
+                      value={config.restaurantLocation?.lat} 
+                      onChange={(e) => setConfig({
+                        ...config, 
+                        restaurantLocation: { ...config.restaurantLocation, lat: parseFloat(e.target.value) }
+                      })}
+                      className="h-14 bg-[#141F2D] border-[#EFA765]/10 text-xl font-bold text-white focus:border-[#EFA765] rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[9px] font-black text-white/30 uppercase ml-1">Longitude</p>
+                    <Input 
+                      type="number" 
+                      step="any"
+                      value={config.restaurantLocation?.lng} 
+                      onChange={(e) => setConfig({
+                        ...config, 
+                        restaurantLocation: { ...config.restaurantLocation, lng: parseFloat(e.target.value) }
+                      })}
+                      className="h-14 bg-[#141F2D] border-[#EFA765]/10 text-xl font-bold text-white focus:border-[#EFA765] rounded-xl"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Physical Address Reference */}
+              <div className="bg-[#1D2B3F] p-8 rounded-[2rem] border border-[#EFA765]/20 shadow-xl md:col-span-3">
+                <div className="flex items-center gap-4 mb-4">
+                  <Compass className="text-[#EFA765] w-5 h-5" />
+                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[#EFA765]">Physical Address Reference</label>
+                </div>
+                <Input 
+                  type="text" 
+                  placeholder="Enter shop address..."
+                  value={config.restaurantLocation?.address} 
+                  onChange={(e) => setConfig({
+                    ...config, 
+                    restaurantLocation: { ...config.restaurantLocation, address: e.target.value }
+                  })}
+                  className="h-14 bg-[#141F2D] border-[#EFA765]/10 text-lg font-medium text-white focus:border-[#EFA765] rounded-xl"
+                />
+              </div>
+            </div>
+          </TabsContent>
+
           {/* 3. FINANCE */}
           <TabsContent value="finance" className="space-y-4 md:space-y-8 outline-none animate-in fade-in slide-in-from-bottom-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -260,7 +362,6 @@ export default function SettingsPage() {
           {/* 4. SECURITY */}
           <TabsContent value="system" className="space-y-4 md:space-y-8 outline-none animate-in fade-in slide-in-from-bottom-5">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-              {/* Maintenance */}
               <div className={`p-8 rounded-[2rem] border transition-all duration-500 ${config.maintenanceMode ? 'bg-orange-500/10 border-orange-500/40' : 'bg-[#1D2B3F] border-[#EFA765]/20'}`}>
                 <div className="flex items-center justify-between mb-6">
                   <ShieldAlert className={`w-10 h-10 ${config.maintenanceMode ? 'text-orange-500' : 'text-[#EFA765]/20'}`} />
@@ -274,7 +375,6 @@ export default function SettingsPage() {
                 <p className="text-[10px] text-white/40 mt-2 font-bold uppercase tracking-widest">Freeze Public API Access.</p>
               </div>
 
-              {/* Catalog Limit */}
               <div className="bg-[#1D2B3F] p-8 rounded-[2rem] border border-[#EFA765]/20 shadow-xl lg:col-span-1">
                 <div className="flex items-center gap-4 mb-6">
                   <Globe className="text-[#EFA765] w-6 h-6" />

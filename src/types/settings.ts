@@ -7,6 +7,11 @@ export interface ISettings {
   estimatedDeliveryTime: string;
   minOrderValue: number;
   deliveryRadius: number;
+  restaurantLocation: {
+    address: string;
+    lat: number;
+    lng: number;
+  };
   staffCommission: number;
   paymentMethods: {
     stripe: boolean;
