@@ -9,6 +9,7 @@ const SettingsSchema = new Schema(
       close: { type: String, default: "23:00" },
     },
     minOrderValue: { type: Number, default: 500 },
+    estimatedDeliveryTime: { type: String, default: "30-45 mins" },
 
     // 2. Logistics & Delivery Radius
     deliveryRadius: { type: Number, default: 10 },

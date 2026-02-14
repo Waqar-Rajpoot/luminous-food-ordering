@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen bg-[#141f2d]">
-      <div className="fixed top-22 left-0 z-50">
+      <div className="fixed top-0 left-0 z-50">
         <AdminSheetNav />
       </div>
       <main className="flex-1 pt-10">

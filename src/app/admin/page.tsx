@@ -97,7 +97,7 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="w-full md:w-auto flex justify-center md:justify-center">
-             <UserProfile user={session?.user as any} />
+            <UserProfile user={session?.user as any} />
           </div>
         </header>
 
@@ -129,9 +129,9 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 md:mb-12">
-           <AlertBox count={stats?.status?.pending} label="Pending Orders" color="text-orange-400" />
-           <AlertBox count={stats?.status?.pendingReviews} label="New Reviews" color="text-blue-400" />
-           <AlertBox count={stats?.status?.canceled} label="Canceled Orders" color="text-red-400" />
+          <AlertBox count={stats?.status?.pending} label="Pending Orders" color="text-orange-400" />
+          <AlertBox count={stats?.status?.pendingReviews} label="New Reviews" color="text-blue-400" />
+          <AlertBox count={stats?.status?.canceled} label="Canceled Orders" color="text-red-400" />
         </div>
 
         <h2 className="text-xl sm:text-2xl font-bold yeseva-one text-[#efa765] mb-6 md:mb-8">Management Links</h2>
