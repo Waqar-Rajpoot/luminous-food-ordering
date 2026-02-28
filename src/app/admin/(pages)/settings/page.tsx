@@ -128,7 +128,7 @@ export default function SettingsPage() {
             <Button
               onClick={handleUpdate}
               disabled={saving}
-              className="hidden lg:flex bg-[#EFA765] text-[#141F2D] hover:bg-white hover:scale-105 active:scale-95 transition-all h-20 px-10 font-black uppercase text-sm rounded-[1.5rem] gap-2 shadow-2xl shadow-[#EFA765]/20 group"
+              className="self-start lg:self-auto bg-[#EFA765] text-[#141F2D] rounded-md px-6 py-3 flex items-center gap-2 hover:bg-[#EFA765]/90 transition-colors disabled:cursor-not-allowed disabled:bg-[#EFA765]/50 hover:cursor-pointer"
             >
               {saving ? "Processing..." : (
                 <>

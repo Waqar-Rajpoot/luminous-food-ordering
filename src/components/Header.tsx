@@ -252,7 +252,6 @@ export default function Header() {
           </div>
         </nav>
       </header>
-      <div className="h-20" />
     </>
   );
 }

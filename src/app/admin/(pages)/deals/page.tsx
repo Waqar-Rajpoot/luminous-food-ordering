@@ -288,7 +288,7 @@ export default function CreateDealPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-[#EFA765] text-[#141F2D] hover:bg-white h-16 sm:h-20 rounded-2xl text-xl font-black transition-all shadow-xl shadow-[#EFA765]/10"
+                    className="w-full bg-[#EFA765] text-[#141F2D] rounded-md px-6 py-3 flex items-center justify-center gap-2 hover:bg-[#EFA765]/90 transition-colors disabled:cursor-not-allowed disabled:bg-[#EFA765]/50 hover:cursor-pointer"
                   >
                     {isSubmitting ? (
                       <Loader2 className="animate-spin h-6 w-6" />

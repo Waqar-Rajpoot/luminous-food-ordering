@@ -83,9 +83,9 @@ export default function StoreClosedPage() {
         </div>
 
         {/* Navigation */}
-        <div className="pt-6">
+        <div className="pt-6 flex justify-center">
           <Link href="/">
-            <Button className="bg-white text-[#0F172A] hover:bg-[#EFA765] hover:text-white rounded-2xl font-black uppercase text-[11px] h-12 px-8 transition-all group shadow-lg shadow-blue-500/10">
+            <Button className=" text-sm px-4 py-2 border border-[#EFA765]/30 hover:bg-[#EFA765]/10 transition-colors duration-300 flex items-center gap-1 hover:text-[#EFA765] bg-[#1D2B3F]/50 backdrop-blur-md">
               <ChevronLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" />
               Explore Menu
             </Button>

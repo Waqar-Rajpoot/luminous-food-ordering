@@ -56,7 +56,7 @@ export default function MaintenancePage() {
           <Link href="/">
             <Button
               variant="ghost"
-              className="text-white/40 hover:text-white text-[10px] font-black uppercase tracking-widest gap-2"
+              className="text-sm px-4 py-2 border border-[#EFA765]/30 hover:bg-[#EFA765]/10 transition-colors duration-300 flex items-center gap-1 hover:text-[#EFA765]"
             >
               Check Status Again <ChevronRight size={14} />
             </Button>
