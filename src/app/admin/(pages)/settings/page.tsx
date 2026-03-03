@@ -173,7 +173,7 @@ export default function SettingsPage() {
                   <Switch
                     checked={config.isStoreOpen}
                     onCheckedChange={(val) => setConfig({ ...config, isStoreOpen: val })}
-                    className="data-[state=checked]:bg-[#EFA765] scale-125"
+                    className="data-[state=checked]:bg-[#EFA765] data-[state=unchecked]:bg-red-500 scale-125"
                   />
                 </div>
                 <p className="text-[10px] text-white/40 font-medium italic">Toggle global storefront visibility for customers.</p>
@@ -351,7 +351,7 @@ export default function SettingsPage() {
                         ...config, 
                         paymentMethods: {...config.paymentMethods, [method]: val}
                       })}
-                      className="data-[state=checked]:bg-[#EFA765]"
+                      className="data-[state=checked]:bg-[#EFA765] data-[state=unchecked]:bg-[#1D2B3F] border-[#EFA765]/60 text-yellow-300 scale-125"
                     />
                   </div>
                 ))}
@@ -368,7 +368,7 @@ export default function SettingsPage() {
                   <Switch 
                     checked={config.maintenanceMode} 
                     onCheckedChange={(val) => setConfig({...config, maintenanceMode: val})}
-                    className="data-[state=checked]:bg-orange-500 scale-125"
+                    className="data-[state=checked]:bg-orange-500 data-[state=unchecked]:bg-[#1D2B3F] border-[#EFA765]/60 text-yellow-300 scale-125"
                   />
                 </div>
                 <h3 className="text-2xl font-black uppercase italic text-white leading-none">Maintenance</h3>
