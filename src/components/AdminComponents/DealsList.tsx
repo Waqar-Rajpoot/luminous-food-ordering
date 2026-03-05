@@ -68,6 +68,7 @@ export default function AdminDealList({ onEdit }: AdminDealListProps) {
       const { data } = await axios.get("/api/deals");
       if (data.success) setDeals(data.data);
     } catch (error) {
+      console.error(error);
       toast.error("Failed to load deals");
     } finally {
       setLoading(false);
@@ -88,6 +89,7 @@ export default function AdminDealList({ onEdit }: AdminDealListProps) {
         toast.success(`Deal is now ${!currentStatus ? "Live" : "Hidden"}`);
       }
     } catch (error) {
+      console.error(error);
       toast.error("Failed to update status");
     }
   };
@@ -98,6 +100,7 @@ export default function AdminDealList({ onEdit }: AdminDealListProps) {
       toast.success("Deal deleted successfully");
       setDeals(deals.filter((deal) => deal._id !== id));
     } catch (error) {
+      console.error(error);
       toast.error("Failed to delete deal");
     }
   };
@@ -218,7 +221,7 @@ export default function AdminDealList({ onEdit }: AdminDealListProps) {
                           variant="ghost"
                           size="icon"
                           onClick={() => onEdit(deal)}
-                          className="h-7 w-7 rounded-md hover:bg-[#EFA765] hover:text-[#141F2D] transition-colors"
+                          className="h-7 w-7 rounded-md hover:bg-[#EFA765] hover:text-[#141F2D] transition-colors text-[#EFA765]/60"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -229,7 +232,7 @@ export default function AdminDealList({ onEdit }: AdminDealListProps) {
                           onClick={() =>
                             toggleStatus(deal._id, deal.isAvailable)
                           }
-                          className={`h-7 w-7 rounded-md hover:bg-white/10 transition-colors ${deal.isAvailable ? "text-amber-500" : "text-green-500"}`}
+                          className={`h-7 w-7 rounded-md hover:bg-white/10 transition-colors hover:text-[#EFA765] ${deal.isAvailable ? "text-amber-500" : "text-green-500"}`}
                         >
                           {deal.isAvailable ? (
                             <PowerOff className="h-3.5 w-3.5" />

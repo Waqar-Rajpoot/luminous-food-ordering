@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import UserProfile from "@/components/user-dashboard/UserProfile";
+import AnalyticsDashboard from "@/components/admin/AnalyticsCharts"; 
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -36,25 +37,17 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen text-slate-100 p-4 sm:p-6 lg:px-12">
-      <div className="max-w-7xl mx-auto">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 border-b border-white/10 pb-6 md:pb-8 gap-6">
-          <div className="w-full md:w-auto flex flex-col justify-center md:justify-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold yeseva-one tracking-tight">
-              Admin <span className="text-[#efa765]">Summary</span>
-            </h1>
-            <p className="text-slate-400 mt-1 sm:mt-2 varela-round text-sm sm:text-base lg:text-lg">
-              Store performance insights and management.
-            </p>
-          </div>
-          <div className="w-full md:w-auto flex justify-center md:justify-center">
-            <UserProfile user={session?.user as any} />
-          </div>
-        </header>
+      <div className="max-w-7xl mx-auto space-y-8 md:space-y-12">
+        {/* Profile Section - Full Width & Simplified Alignment */}
+        <section className="w-full border-b border-white/10 pb-6 md:pb-8">
+          <UserProfile user={session?.user as any} />
+        </section>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 md:mb-12">
+        {/* Top Level Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <StatCard
             title="Total Revenue"
-            value={`Rs. ${stats?.financials?.totalRevenue}`}
+            value={`Rs. ${stats?.financials?.totalRevenue?.toLocaleString()}`}
             icon={<DollarSign className="text-emerald-400" />}
             desc="From paid orders"
           />
@@ -78,7 +71,8 @@ export default function AdminDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 md:mb-12">
+        {/* Actionable Alerts */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <AlertBox
             count={stats?.status?.pending}
             label="Pending Orders"
@@ -95,17 +89,32 @@ export default function AdminDashboard() {
             color="text-red-400"
           />
         </div>
+
+        {/* Analytics Section */}
+        <section className="border-t border-white/5 pt-12">
+          <div className="mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold yeseva-one">
+              Deep <span className="text-[#efa765]">Analytics</span>
+            </h2>
+            <p className="text-zinc-500 varela-round text-sm mt-2">
+              Visualize trends and category performance for the current business cycle.
+            </p>
+          </div>
+          
+          <div className="bg-white/5 backdrop-blur-sm border border-zinc-700 rounded-3xl overflow-hidden shadow-2xl">
+            <AnalyticsDashboard />
+          </div>
+        </section>
       </div>
     </div>
   );
 }
 
-// UI Helper Components
 function StatCard({ title, value, icon, desc }: any) {
   return (
-    <div className="bg-white/5 backdrop-blur-md border border-white/10 p-5 sm:p-6 rounded-2xl shadow-xl hover:bg-white/10 transition-colors">
+    <div className="bg-white/5 backdrop-blur-md border border-white/10 p-5 sm:p-6 rounded-2xl shadow-xl hover:bg-white/10 transition-colors group">
       <div className="flex items-center justify-between mb-4">
-        <div className="p-2 sm:p-3 bg-white/5 rounded-xl border border-white/10 shadow-inner">
+        <div className="p-2 sm:p-3 bg-white/5 rounded-xl border border-white/10 shadow-inner group-hover:scale-110 transition-transform">
           {icon}
         </div>
       </div>
@@ -124,7 +133,7 @@ function StatCard({ title, value, icon, desc }: any) {
 
 function AlertBox({ count, label, color }: any) {
   return (
-    <div className="bg-white/5 border border-white/10 p-4 sm:p-5 rounded-xl flex items-center justify-between hover:bg-white/10 transition-all">
+    <div className="bg-white/5 border border-white/10 p-4 sm:p-5 rounded-xl flex items-center justify-between hover:bg-white/10 transition-all cursor-pointer">
       <div className="flex items-center gap-3">
         <AlertCircle size={16} className={color} />
         <span className="text-xs sm:text-sm font-semibold text-slate-200">
@@ -140,7 +149,7 @@ function LoadingSpinner() {
   return (
     <div className="flex flex-col justify-center items-center h-[80vh]">
       <Loader2 className="h-10 w-10 animate-spin text-[#efa765]" />
-      <p className="mt-4 text-slate-400 font-medium tracking-widest uppercase text-[10px]">
+      <p className="mt-4 text-zinc-500 font-medium tracking-widest uppercase text-[10px]">
         Syncing Admin Data...
       </p>
     </div>

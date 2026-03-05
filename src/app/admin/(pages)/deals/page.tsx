@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Save, Loader2, Calendar, X, Zap } from "lucide-react";
+import { Plus, Trash2, Loader2, Calendar, X, Zap } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import FileUpload from "@/components/MediaUploader";
