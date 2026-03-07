@@ -36,7 +36,6 @@ export async function GET() {
         message: "No products or deals found at the moment."
       }, { status: 404 });
     }
-
     return NextResponse.json({
       success: true,
       data: {
@@ -54,7 +53,10 @@ export async function GET() {
           savings: (deal.originalPrice || 0) - (deal.dealPrice || 0),
           image: deal.image,
           items: deal.items,
-          isAvailable: deal.isAvailable
+          isAvailable: deal.isAvailable,
+          startDate: deal.startDate,
+          endDate: deal.endDate,
+          availableDays: deal.availableDays || []
         }))
       }
     }, { status: 200 });

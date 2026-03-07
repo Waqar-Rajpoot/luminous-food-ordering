@@ -15,6 +15,7 @@ import {
   Zap,
   TrendingUp,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
@@ -142,66 +143,92 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {data?.activeDeals.map((deal: any) => (
-              <div
-                key={deal._id}
-                className="group relative bg-[#1a293a] rounded-[2.5rem] md:rounded-[3rem] overflow-hidden border border-white/5 flex flex-col h-110 md:h-120"
-              >
-                <div className="relative h-3/5 md:h-2/3 overflow-hidden">
-                  {isValid(deal.image) && (
-                    <Image
-                      src={deal.image}
-                      alt={deal.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-linear-to-t from-[#1a293a] via-transparent to-transparent" />
-                  <div className="absolute top-4 right-4 md:top-6 md:right-6">
-                    <div className="bg-[#efa765] text-[#141f2d] text-[9px] md:text-[10px] font-black px-3 py-1.5 md:px-4 md:py-2 rounded-full uppercase shadow-2xl">
-                      Save Rs.{" "}
-                      {deal.savings || deal.originalPrice - deal.dealPrice}
+            {data?.activeDeals.map((deal: any) => {
+              // Format dates for display
+              const startDate = deal.startDate
+                ? new Date(deal.startDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                  })
+                : null;
+              const endDate = deal.endDate
+                ? new Date(deal.endDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                  })
+                : null;
+
+              return (
+                <div
+                  key={deal._id}
+                  className="group relative bg-[#1a293a] rounded-[2.5rem] md:rounded-[3rem] overflow-hidden border border-white/5 flex flex-col h-115 md:h-125"
+                >
+                  <div className="relative h-3/5 md:h-2/3 overflow-hidden">
+                    {isValid(deal.image) && (
+                      <Image
+                        src={deal.image}
+                        alt={deal.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-[#1a293a] via-transparent to-transparent" />
+
+                    {/* Status & Savings Badges */}
+                    <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                      {startDate && endDate && (
+                        <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] md:text-[9px] font-bold px-3 py-1.5 rounded-full uppercase flex items-center gap-2">
+                          <Calendar size={10} className="text-[#efa765]" />
+                          {startDate} - {endDate}
+                        </div>
+                      )}
+                      <div className="bg-[#efa765] text-[#141f2d] text-[9px] md:text-[10px] font-black px-3 py-1.5 md:px-4 md:py-2 rounded-full uppercase shadow-2xl ml-auto">
+                        Save Rs.{" "}
+                        {deal.savings || deal.originalPrice - deal.dealPrice}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="p-6 md:p-8 pt-2 flex flex-col grow justify-between">
-                  <div>
-                    <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter mb-2 md:mb-3">
-                      {deal.title}
-                    </h4>
-                    <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
-                      {deal.items.slice(0, 3).map((it: any, i: number) => (
-                        <span
-                          key={i}
-                          className="text-[8px] md:text-[9px] font-bold text-white/50 uppercase border border-white/10 px-2 py-1 rounded-lg bg-white/5"
-                        >
-                          {it.quantity}x {it.name}
+                  <div className="p-6 md:p-8 pt-2 flex flex-col grow justify-between">
+                    <div>
+                      <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter mb-2 md:mb-3">
+                        {deal.title}
+                      </h4>
+
+                      {/* Items List */}
+                      <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
+                        {deal.items.slice(0, 4).map((it: any, i: number) => (
+                          <span
+                            key={i}
+                            className="text-[8px] md:text-[9px] font-bold text-white/50 uppercase border border-white/10 px-2 py-1 rounded-lg bg-white/5"
+                          >
+                            {it.quantity}x {it.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-white/30 text-[9px] md:text-[10px] line-through font-bold">
+                          Rs. {deal.originalPrice}
                         </span>
-                      ))}
+                        <span className="text-2xl md:text-3xl font-black text-[#efa765]">
+                          Rs. {deal.dealPrice}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleAddToCart(deal, true)}
+                        className="bg-white text-[#141f2d] h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center hover:bg-[#efa765] transition-all transform group-hover:rotate-360 duration-500 shadow-xl"
+                      >
+                        <ShoppingCart size={18} />
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-white/30 text-[9px] md:text-[10px] line-through font-bold">
-                        Rs. {deal.originalPrice}
-                      </span>
-                      <span className="text-2xl md:text-3xl font-black text-[#efa765]">
-                        Rs. {deal.dealPrice}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => handleAddToCart(deal, true)}
-                      className="bg-white text-[#141f2d] h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center hover:bg-[#efa765] transition-all transform group-hover:rotate-360 duration-500 shadow-xl"
-                    >
-                      <ShoppingCart size={18} />
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -240,8 +267,8 @@ export default function HomePage() {
                     <span className="text-[10px] md:text-[11px] font-black">
                       {prod.averageRating}
                     </span>
-                    <span className="text-[8px] md:text-[9px] text-white/40 font-bold">
-                      ({prod.reviewCount})
+                    <span className="text-[8px] md:text-[9px] text-gray-300 font-bold">
+                      Reviews ({prod.reviewCount})
                     </span>
                   </div>
 
@@ -264,16 +291,16 @@ export default function HomePage() {
                   <h4 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter mb-3 h-10 md:h-14 flex items-center justify-center px-2">
                     {prod.name}
                   </h4>
-                <div className="flex items-center justify-evenly gap-6 md:gap-8">
-                  <p className="text-2xl md:text-3xl font-black text-[#efa765]">
-                    Rs. {prod.price}
-                  </p>
-                  <button
-                    onClick={() => handleAddToCart(prod, false)}
-                    className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-[#EFA765]/10 md:bg-white/5 border border-[#EFA765]/20 md:border-white/10 flex items-center justify-center text-[#EFA765] md:text-white hover:bg-[#EFA765] hover:text-[#141F2D] transition-all active:scale-95"
-                  >
-                    <Zap size={18} />
-                  </button>
+                  <div className="flex items-center justify-evenly gap-6 md:gap-8">
+                    <p className="text-2xl md:text-3xl font-black text-[#efa765]">
+                      Rs. {prod.price}
+                    </p>
+                    <button
+                      onClick={() => handleAddToCart(prod, false)}
+                      className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-[#EFA765]/10 md:bg-white/5 border border-[#EFA765]/20 md:border-white/10 flex items-center justify-center text-[#EFA765] md:text-white hover:bg-[#EFA765] hover:text-[#141F2D] transition-all active:scale-95"
+                    >
+                      <Zap size={18} />
+                    </button>
                   </div>
                 </div>
               </div>
