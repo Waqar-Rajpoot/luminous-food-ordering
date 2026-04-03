@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { CreditCard, Loader2, Truck, Zap, PlusCircle, Tag, MapPinOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -116,7 +116,6 @@ const CheckoutPage = () => {
       return;
     }
 
-    // CRITICAL FIX: Ensure coordinates exist before proceeding
     if (!isShippingFormValid || !shippingAddress.lat || !shippingAddress.lng) {
       toast.error("Coordinate Sync Error", { description: "Please pin your location on the map again." });
       return;
@@ -142,8 +141,8 @@ const CheckoutPage = () => {
         })),
         shippingAddress: {
             ...shippingAddress,
-            lat: Number(shippingAddress.lat), // Explicit cast to Number
-            lng: Number(shippingAddress.lng), // Explicit cast to Number
+            lat: Number(shippingAddress.lat),
+            lng: Number(shippingAddress.lng),
             country: "Pakistan", 
             postalCode: "00000"   
         },
@@ -151,11 +150,8 @@ const CheckoutPage = () => {
         originalTotal: subtotal,
         customerEmail: session.user.email,
         paymentMethod: paymentMethod,
-        shippingRate: 0, // Ensure field exists for schema
+        shippingRate: 0,
       };
-
-      // Debugging log to verify data before it leaves the browser
-      console.log("SENDING TO BACKEND:", checkoutData);
 
       const response = await fetch("/api/stripe-session", {
         method: "POST",
@@ -239,10 +235,10 @@ const CheckoutPage = () => {
   return (
     <div className="container mx-auto px-4 py-12 min-h-screen selection:bg-[#EFA765] selection:text-black">
       {settingsLoading ? (
-         <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <Loader2 className="animate-spin text-[#EFA765] h-12 w-12" />
-            <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.5em]">Syncing...</span>
-         </div>
+          <div className="flex flex-col items-center justify-center py-20 space-y-4">
+             <Loader2 className="animate-spin text-[#EFA765] h-12 w-12" />
+             <span className="text-[10px] font-black uppercase text-white/40 tracking-[0.5em]">Syncing...</span>
+          </div>
       ) : (
         <div className="space-y-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
@@ -257,6 +253,7 @@ const CheckoutPage = () => {
           </div>
 
           <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-12 items-start">
+            {/* Left Column: Forms */}
             <div className="w-full lg:col-span-7 space-y-8 order-2 lg:order-1">
               <ShippingAddressForm onFormChange={handleShippingFormChange} />
               
@@ -279,9 +276,15 @@ const CheckoutPage = () => {
                   </div>
                 </RadioGroup>
               </Card>
+
+              {/* MOBILE ONLY: Order Summary appears at the bottom of the form stack */}
+              <div className="block lg:hidden mt-8">
+                {totalAmountContent}
+              </div>
             </div>
 
-            <div className="w-full lg:col-span-5 space-y-6 order-1 lg:order-2">
+            {/* Right Column: Cart Summary (Desktop) */}
+            <div className="w-full lg:col-span-5 space-y-6 order-1 lg:order-2 mb-8 lg:mb-0">
               <CartSummary
                 cart={cart || []}
                 handleUpdateQuantity={(product, q) => updateQuantity(product.id, q)}
@@ -289,7 +292,10 @@ const CheckoutPage = () => {
                 getCartTotal={getOriginalCartTotal}
                 originalCartTotal={subtotal}
               />
-              <div className="hidden lg:block">{totalAmountContent}</div>
+              {/* DESKTOP ONLY: Summary stays in the sidebar */}
+              <div className="hidden lg:block">
+                {totalAmountContent}
+              </div>
             </div>
           </div>
         </div>

@@ -15,7 +15,7 @@
     "@react-email/render": "^2.0.4",
     "@stripe/stripe-js": "^8.6.1",
     "@tavily/core": "^0.7.1",
-    "axios": "^1.13.2",
+    "axios": "^1.14.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
